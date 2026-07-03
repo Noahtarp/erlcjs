@@ -1,7 +1,9 @@
 import { Client, ERLCEvents, PlayerPermission, Vehicles } from './index.js';
 
 const client = new Client({
-    polling: true,
+    polling: {
+        enabled: true,
+    },
     webhook: {
         enabled: true,
         port: 3000,

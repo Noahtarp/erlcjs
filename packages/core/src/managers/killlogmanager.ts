@@ -15,9 +15,10 @@ export class KillLogManager {
 
     /**
      * Creates an instance of KillLogManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
+     * @param maxCacheSize - The maximum number of kill logs to hold in cache.
      */
-    constructor(private readonly client: Client) {}
+    constructor(private readonly client: Client, private readonly maxCacheSize?: number) {}
 
     /**
      * Fetches all kill logs from the game server.
@@ -49,6 +50,14 @@ export class KillLogManager {
                 const newKill = new KillLog(this.client, rawData);
                 this.cache.set(key, newKill);
                 this.client.emit(ERLCEvents.kill, newKill);
+            }
+        }
+
+        if (this.maxCacheSize && this.maxCacheSize > 0) {
+            while (this.cache.size > this.maxCacheSize) {
+                const oldestKey = this.cache.keys().next().value;
+                if (oldestKey === undefined) break;
+                this.cache.delete(oldestKey);
             }
         }
 

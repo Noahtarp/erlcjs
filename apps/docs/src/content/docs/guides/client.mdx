@@ -15,6 +15,7 @@ import { Client } from '@erlcjs/core';
 const client = new Client({
     serverKey: 'YOUR_SERVER_KEY',
     globalKey: 'OPTIONAL_GLOBAL_KEY',
+    globalAppId: 'OPTIONAL_GLOBAL_APP_ID',
     polling: true,
 });
 ```
@@ -26,7 +27,7 @@ const client = new Client({
 | `serverKey` | `string` | **Required.** The Server API key retrieved from your private server settings. |
 | `globalKey` | `string` | *Optional.* A global key generated for your application. |
 | `globalAppId` | `string | number` | **Optional.** The global app ID generated for your application. Used to create authorization links.
-| `polling` | `boolean` | *Optional.* If `true`, the client requests server data updates every 5 seconds. |
+| `polling` | `object | boolean` | *Optional.* If `true`, the client requests server data updates every 5 seconds. |
 | `webhook` | `object` | *Optional.* Configuration details for Webhook Gateway mode. |
 
 ---
@@ -34,6 +35,10 @@ const client = new Client({
 ## Connection Strategies
 
 erlc.js offers two ways to receive real-time updates from your ER:LC private server: **Polling Mode** and **Webhook Gateway Mode**.
+
+:::info
+It is recommended to use polling and webhooks
+:::
 
 ### 1. Polling Mode
 
@@ -44,7 +49,9 @@ In Polling Mode, the client triggers a background timer that fetches server logs
 ```javascript
 const client = new Client({
     serverKey: 'YOUR_KEY',
-    polling: true // Starts polling immediately upon construction
+    polling: { // Starts polling immediately upon construction
+        enabled: true
+    }
 });
 ```
 

@@ -15,9 +15,10 @@ export class CommandLogManager {
 
     /**
      * Creates an instance of CommandLogManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
+     * @param maxCacheSize - The maximum number of command logs to hold in cache.
      */
-    constructor(private readonly client: Client) {}
+    constructor(private readonly client: Client, private readonly maxCacheSize?: number) {}
 
     /**
      * Fetches all command logs from the game server.
@@ -49,6 +50,14 @@ export class CommandLogManager {
                 const newCommand = new CommandLog(this.client, rawData);
                 this.cache.set(key, newCommand);
                 this.client.emit(ERLCEvents.command, newCommand);
+            }
+        }
+
+        if (this.maxCacheSize && this.maxCacheSize > 0) {
+            while (this.cache.size > this.maxCacheSize) {
+                const oldestKey = this.cache.keys().next().value;
+                if (oldestKey === undefined) break;
+                this.cache.delete(oldestKey);
             }
         }
 

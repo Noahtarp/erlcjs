@@ -40,13 +40,22 @@ export interface ClientOptions {
         secret?: string;
     };
     /**
-     * Whether to poll the ER:LC API endpoints periodically.
+     * Configuration to poll the ER:LC API endpoints periodically.
      */
-    polling?: boolean;
-    /**
-     * The rate to poll the ER:LC API endpoints. Minimum value of 500.
-     */
-    pollingRateMs?: number;
+    polling?: {
+        /**
+         * Whether to poll the ER:LC API endpoints periodically.
+         */
+        enabled: boolean;
+        /**
+         * The rate to poll the ER:LC API endpoints. Minimum value of 500.
+         */
+        pollingRateMs?: number;
+    } | true;
+    maxCacheSize?: {
+        killLog?: number;
+        commandLog?: number;
+    }
 }
 
 export type RawPlayerPermission = 'Normal' | 'Server Administrator' | 'Server Owner' | 'Server Moderator';
