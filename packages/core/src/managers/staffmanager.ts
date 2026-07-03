@@ -4,7 +4,7 @@ import { Staff } from '../structures/staff.js';
 import type { RawServerData, RawStaffData } from '../types/index.js';
 
 /**
- * Manager responsible for fetching, caching, and updating Vehicle structures.
+ * Manager responsible for fetching, caching, and updating Staff structures.
  * @public
  */
 export class StaffManager {
@@ -73,13 +73,13 @@ export class StaffManager {
             activeUserIds.add(Number(userId));
             const cachedUser = cache.get(Number(userId));
 
-            if (cachedUser) return;
+            if (cachedUser) continue;
             const newStaff = new Staff(this.client, userId, username);
             cache.set(Number(userId), newStaff);
             this.client.emit(ERLCEvents.staffAdd, newStaff, type);
         }
 
-        for (const cachedId of this.admins.keys()) {
+        for (const cachedId of cache.keys()) {
             if (!activeUserIds.has(cachedId)) {
                 this.client.emit(ERLCEvents.staffRemove, cache.get(cachedId)!, type);
                 cache.delete(cachedId);
