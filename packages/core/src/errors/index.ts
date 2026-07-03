@@ -3,7 +3,7 @@
  * @public
  */
 export class InvalidServerKeyError extends Error {
-    constructor(message: string = 'Invalid Server API Key.') {
+    constructor(message: string = 'Invalid Server API Key. Get one at https://api.erlc.gg/server-owners') {
         super(message);
         this.name = 'InvalidServerKeyError';
     }
@@ -14,7 +14,7 @@ export class InvalidServerKeyError extends Error {
  * @public
  */
 export class InvalidGlobalKeyError extends Error {
-    constructor(message: string = 'Invalid Global API Key.') {
+    constructor(message: string = 'Invalid Global API Key. Get one at https://api.erlc.gg/developers/applications') {
         super(message);
         this.name = 'InvalidGlobalKeyError';
     }
@@ -61,5 +61,82 @@ export class ServerOfflineError extends Error {
     constructor(message: string = 'Server Offline.') {
         super(message);
         this.name = 'ServerOfflineError';
+    }
+}
+
+/**
+ * Error thrown if the server key is banned from accessing the ER:LC API.
+ * @public
+ */
+export class ServerBannedError extends Error {
+    constructor(message: string = 'This server key is banned from accessing the ER:LC API.') {
+        super(message);
+        this.name = 'ServerBannedError';
+    }
+}
+
+/**
+ * Error thrown if the in-game command is invalid.
+ * @public
+ */
+export class InvalidCommandError extends Error {
+    constructor(message: string = 'The command provided was invalid.') {
+        super(message);
+        this.name = 'InvalidCommandError';
+    }
+}
+
+/**
+ * Error thrown if the request was unauthorized.
+ * This is normally thrown when the IP was not whitelisted or the global app was not authorized for that server.
+ * @public
+ */
+export class UnauthorizedError extends Error {
+    constructor(message: string = 'You are not authorized to perform this action. Find out more at https://erlcjs.xyz/api/core/unauthorizederror/') {
+        super(message);
+        this.name = 'UnauthorizedError';
+    }
+}
+
+/**
+ * Error thrown when the command is restricted.
+ * @public
+ */
+export class RestrictedCommandError extends Error {
+    constructor(message: string = 'The command provided was restricted.') {
+        super(message);
+        this.name = 'RestrictedCommandError';
+    }
+}
+
+/**
+ * Error thrown when the message sent is prohibited.
+ * @public
+ */
+export class ProhibitedMessageError extends Error {
+    constructor(message: string = 'The message provided is prohibited.') {
+        super(message);
+        this.name = 'ProhibitedMessageError';
+    }
+}
+
+/**
+ * Error thrown when the resource being accessed is restricted.
+ * @public
+ */
+export class RestrictedResourceError extends Error {
+    constructor(message: string = 'The resource being accessed is restricted.') {
+        super(message);
+        this.name = 'RestrictedResourceError';
+    }
+}
+
+/**
+ * Error thrown when the server being accessed is out of date.
+ */
+export class OutOfDateServerError extends Error {
+    constructor(message: string = 'The server being accessed is out of date. Try restarting it.') {
+        super(message);
+        this.name = 'OutOfDateServerError';
     }
 }
