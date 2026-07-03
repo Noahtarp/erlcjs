@@ -1,5 +1,11 @@
 # @erlcjs/core
 
+  [![npm version](https://img.shields.io/npm/v/@erlcjs/core?style=flat-square)](https://www.npmjs.com/package/@erlcjs/core)
+  [![npm downloads](https://img.shields.io/npm/dm/@erlcjs/core?style=flat-square)](https://www.npmjs.com/package/@erlcjs/core)
+  [![bundle size](https://img.shields.io/bundlephobia/min/@erlcjs/core?style=flat-square)](https://bundlephobia.com/package/@erlcjs/core)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue?style=flat-square)](https://www.typescriptlang.org/)
+  [![license](https://img.shields.io/npm/l/@erlcjs/core?style=flat-square)](https://github.com/erlc-js/erlcjs/blob/main/LICENSE)
+
 `@erlcjs/core` is a lightweight, fully-featured, and strongly-typed API wrapper for Roblox's **Emergency Response: Liberty County (ER:LC)** private servers. It handles the low-level API mechanics, caching, and rate limiting so you can focus on building server integrations, moderation tools, and dashboards.
 
 ## Features
@@ -9,6 +15,10 @@
 *   **Real-time Event Emitters**: Track game updates using high-frequency Polling or Webhook Gateway modes.
 *   **Entity Cache**: Caches player states, spawned vehicles, active emergency calls, kill logs, and mod calls automatically.
 *   **Console Commands**: Easily trigger commands like `:kick`, `:kill`, `:pm` directly through JS/TS methods.
+
+## Prerequisites
+- Node.js V16.0.0 or higher or Bun V1.0.0 or higher.
+- A valid ER:LC Private Server API Key.
 
 ## Installation
 
@@ -109,3 +119,9 @@ await client.commands.execute(':heal user');
 
 To read the complete API Reference and detailed guides, view the documentation site:
 [erlc.js Documentation Portal](https://erlcjs.xyz)
+
+## Contributing
+Contributions are welcome! Please open an issue or submit a pull request on GitHub.
+
+## License
+Distributed under the Apache-2.0 License. See `LICENSE` for more information.
