@@ -89,6 +89,9 @@ export class InvalidCommandError extends Error {
 /**
  * Error thrown if the request was unauthorized.
  * This is normally thrown when the IP was not whitelisted or the global app was not authorized for that server.
+ * To authorize an IP go to https://api.erlc.gg/server-owners.
+ * To create a global app for an authorization link go to https://api.erlc.gg/developers/applications.
+ * To create an authorization link for your global app do `console.log(client.authorizationLink)`.
  * @public
  */
 export class UnauthorizedError extends Error {
