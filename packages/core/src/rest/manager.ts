@@ -1,5 +1,5 @@
 import { type ClientOptions } from '../types/index.js';
-import { ERLCAPIError, InvalidServerKeyError } from '../errors/index.js';
+import { ERLCAPIError, InvalidServerKeyError, ServerOfflineError } from '../errors/index.js';
 
 interface BucketInfo {
     limit: number;
@@ -75,6 +75,14 @@ export class RestManager {
                         throw new InvalidServerKeyError();
                     }
 
+                    if (response.status === 422) {
+                        const data = await response.json();
+                        if (data.code === 3002) {
+                            return reject(new ServerOfflineError());
+                        }
+                        return reject(new ERLCAPIError(`${response.status}: ${response.statusText}\n${data.code}: ${data.message}`))
+                    }
+
                     if (response.status === 429) {
                         this.queue.unshift({ endpoint, execute: executeTask });
                         return;
@@ -87,7 +95,7 @@ export class RestManager {
                             await new Promise((res) => setTimeout(res, delay));
                             return executeTask();
                         }
-                        return reject(new ERLCAPIError(`${response.status} ${response.statusText}`));
+                        return reject(new ERLCAPIError(`${response.status}: ${response.statusText}`));
                     }
 
                     if (!response.ok) {

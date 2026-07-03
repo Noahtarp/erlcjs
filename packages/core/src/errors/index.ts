@@ -52,3 +52,14 @@ export class ERLCAPIError extends Error {
         this.name = 'ERLCAPIError';
     }
 }
+
+/**
+ * Error thrown when the ER:LC Private Server is offline.
+ * @public
+ */
+export class ServerOfflineError extends Error {
+    constructor(message: string = 'Server Offline.') {
+        super(message);
+        this.name = 'ServerOfflineError';
+    }
+}
