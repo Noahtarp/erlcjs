@@ -279,16 +279,32 @@ export class Client extends EventEmitter<ClientEvents> {
      * Registers an in-game custom command.
      * @param command - The command to register.
      */
-    public registerCommand(command: InGameCommand) {
+    public registerCommand(cmd: InGameCommand) {
+        const command = { ...cmd };
+        if (command.name.startsWith(';')) command.name = command.name.slice(1);
+        command.name = command.name.toLowerCase();
         if (this.inGameCommands.has(command.name)) {
             throw new Error(`Command with name "${command.name}" is already registered.`);
         }
-        if (command.name.startsWith(';')) command.name = command.name.slice(1);
+        if (command.aliases?.length && command.aliases.length > 0) command.aliases.forEach((alias) => {
+            const aliasCmd = { ...command };
+            aliasCmd.name = alias;
+            aliasCmd.aliases = undefined;
+            this.registerCommand(aliasCmd);
+        });
         if (!command.name || !command.execute) {
             throw new Error('Invalid command: must have a name and an execute function.');
         }
         if (this.inGameCommands.size === 0) this.handleCustomCommands();
         this.inGameCommands.set(command.name, command);
+    }
+
+    /**
+     * Unregisters an in-game custom command.
+     * @param commandName - The command name to unregister.
+     */
+    public unregisterCommand(commandName: string) {
+        this.inGameCommands.delete(commandName.toLowerCase());
     }
 
     /**
@@ -304,6 +320,7 @@ export class Client extends EventEmitter<ClientEvents> {
             const command = this.inGameCommands.get(commandName.toLowerCase());
             if (!command) return;
             try {
+                if (command.permission?.length && command.permission.length > 0 && !command.permission.includes(player.permission)) return;
                 command.execute({ player: player, args });
             } catch (err) {
                 this.emit('error', err);

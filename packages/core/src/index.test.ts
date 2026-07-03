@@ -1,4 +1,4 @@
-import { Client, ERLCEvents, Vehicles } from './index.js';
+import { Client, ERLCEvents, PlayerPermission, Vehicles } from './index.js';
 
 const client = new Client({
     polling: true,
@@ -33,8 +33,25 @@ client.on(ERLCEvents.playerJoin, (player) => {
 
 client.registerCommand({
     name: 'test',
+    aliases: [ 'another' ],
     execute: ({ player, args }) => {
         console.log(`Player ${player.username} executed the test command with arguments: ${args.join(', ')}`);
         player.message(`Hello ${player.username}, you executed the test command with arguments: ${args.join(', ')}`);
+    }
+})
+
+client.registerCommand({
+    name: 'ismod',
+    permission: [ PlayerPermission.Mod ],
+    execute: ({ player, args }) => {
+        player.message('You are a mod.')
+    }
+})
+
+client.registerCommand({
+    name: 'isowner',
+    permission: [ PlayerPermission.Owner ],
+    execute: ({ player, args }) => {
+        player.message('You are the owner.')
     }
 })
