@@ -65,7 +65,9 @@ Follow these steps to get your first script running in minutes.
             // Initialize the erlc.js Client
             const client = new Client({
                 serverKey: 'YOUR_SERVER_API_KEY', // Replace with your copied key
-                polling: true // Enable periodic polling
+                polling: {
+                    enabled: true // Enable periodic polling
+                }
             });
 
             // Listen for the player join event
@@ -89,7 +91,9 @@ Follow these steps to get your first script running in minutes.
             // Initialize the erlc.js Client
             const client = new Client({
                 serverKey: 'YOUR_SERVER_API_KEY', // Replace with your copied key
-                polling: true // Enable periodic polling
+                polling: {
+                    enabled: true // Enable periodic polling
+                }
             });
 
             // Listen for the player join event

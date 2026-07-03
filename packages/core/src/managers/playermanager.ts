@@ -16,7 +16,7 @@ export class PlayerManager {
 
     /**
      * Creates an instance of PlayerManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
      */
     constructor(private readonly client: Client) {}
 

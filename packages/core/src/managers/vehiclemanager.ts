@@ -15,7 +15,7 @@ export class VehicleManager {
 
     /**
      * Creates an instance of VehicleManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
      */
     constructor(private readonly client: Client) {}
 

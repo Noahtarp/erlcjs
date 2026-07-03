@@ -21,6 +21,7 @@ import type { Staff } from '../structures/staff.js';
 import { StaffManager } from '../managers/staffmanager.js';
 import { clearInterval } from 'node:timers';
 import { CustomCommandError, InvalidGlobalKeyError, TimeoutError } from '../errors/index.js';
+import { Collection } from '../util/collection.js';
 
 /**
  * Event names emitted by the ERLCApi Client.
@@ -160,7 +161,7 @@ export class Client extends EventEmitter<ClientEvents> {
     /** The interval for the periodic API polling loop. */
     private pollingInterval?: NodeJS.Timeout;
     /** A collection of registered in-game commands. */
-    private inGameCommands = new Map<string, InGameCommand>();
+    private inGameCommands = new Collection<string, InGameCommand>();
 
     /**
      * Creates an instance of Client.
@@ -173,9 +174,9 @@ export class Client extends EventEmitter<ClientEvents> {
         this.players = new PlayerManager(this);
         this.commands = new CommandManager(this);
         this.vehicles = new VehicleManager(this);
-        this.commandLogs = new CommandLogManager(this);
+        this.commandLogs = new CommandLogManager(this, options.maxCacheSize?.commandLog);
         this.emergencyCalls = new EmergencyCallManager(this);
-        this.killLogs = new KillLogManager(this);
+        this.killLogs = new KillLogManager(this, options.maxCacheSize?.killLog);
         this.modCalls = new ModCallManager(this);
         this.staff = new StaffManager(this);
         this.serverId = String(options.serverKey.split('-')[1]);
@@ -186,9 +187,9 @@ export class Client extends EventEmitter<ClientEvents> {
             this.gateway.listen();
         }
 
-        if (options.polling) {
+        if (options.polling === true || options.polling?.enabled === true) {
             (async () => {
-                await this.beginPolling(options.pollingRateMs);
+                await this.beginPolling(options.polling === true ? undefined : options.polling?.pollingRateMs);
             })();
         }
 

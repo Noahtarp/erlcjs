@@ -15,7 +15,7 @@ export class ModCallManager {
 
     /**
      * Creates an instance of ModCallManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
      */
     constructor(private readonly client: Client) {}
 

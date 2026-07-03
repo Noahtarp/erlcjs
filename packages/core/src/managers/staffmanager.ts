@@ -25,7 +25,7 @@ export class StaffManager {
 
     /**
      * Creates an instance of StaffManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
      */
     constructor(private readonly client: Client) {}
 

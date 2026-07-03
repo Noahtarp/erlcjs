@@ -20,7 +20,7 @@ export class EmergencyCallManager {
 
     /**
      * Creates an instance of EmergencyCallManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
      */
     constructor(private readonly client: Client) {}
 
