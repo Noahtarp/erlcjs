@@ -1,3 +1,6 @@
+import type { PlayerPermission } from "../enums/player";
+import type { Player } from "../structures/player";
+
 /**
  * Configuration options for the ERLCApi Client.
  * @public
@@ -8,9 +11,13 @@ export interface ClientOptions {
      */
     serverKey: string;
     /**
-     * Optional global key for wider API access.
+     * Optional global key for your application.
      */
     globalKey?: string;
+    /**
+     * Optional global app ID for your application.
+     */
+    globalAppId?: string | number;
     /**
      * Webhook configuration details.
      */
@@ -33,10 +40,25 @@ export interface ClientOptions {
         secret?: string;
     };
     /**
-     * Whether to poll the ER:LC API endpoints periodically.
+     * Configuration to poll the ER:LC API endpoints periodically.
      */
-    polling?: boolean;
+    polling?: {
+        /**
+         * Whether to poll the ER:LC API endpoints periodically.
+         */
+        enabled: boolean;
+        /**
+         * The rate to poll the ER:LC API endpoints. Minimum value of 500.
+         */
+        pollingRateMs?: number;
+    } | true;
+    maxCacheSize?: {
+        killLog?: number;
+        commandLog?: number;
+    }
 }
+
+export type RawPlayerPermission = 'Normal' | 'Server Administrator' | 'Server Owner' | 'Server Moderator';
 
 /**
  * Raw data structure representing a player from the ERLC API.
@@ -50,7 +72,7 @@ export interface RawPlayerData {
     /**
      * The permission level of the player in the server.
      */
-    Permission: 'Normal' | 'Server Administrator' | 'Server Owner' | 'Server Moderator';
+    Permission: RawPlayerPermission;
     /**
      * The team the player is currently on.
      */
@@ -70,7 +92,7 @@ export interface RawPlayerData {
         /**
          * The Y coordinate of the player in the game.
          */
-        LocationY: number;
+        LocationZ: number;
         /**
          * The postal code of the player's location.
          */
@@ -367,4 +389,32 @@ export interface RawServerData {
      * Active vehicles spawned.
      */
     Vehicles?: RawVehicle[];
+}
+
+/**
+ * In-Game command structure.
+ * @public
+ */
+export interface InGameCommand {
+    /**
+     * The name of the command.
+     */
+    name: string;
+    /**
+     * The description of the command.
+     */
+    description?: string;
+    /**
+     * The permissions the player needs to use the command.
+     */
+    permission?: (RawPlayerPermission | PlayerPermission)[];
+    /**
+     * Aliases of the command.
+     */
+    aliases?: string[];
+    /**
+     * The execution of the command.
+     * @param context - An object of the player and args given to the execute function.
+     */
+    execute: (context: { player: Player; args: string[] }) => void;
 }

@@ -1,5 +1,11 @@
 # @erlcjs/core
 
+  [![npm version](https://img.shields.io/npm/v/@erlcjs/core?style=flat-square)](https://www.npmjs.com/package/@erlcjs/core)
+  [![npm downloads](https://img.shields.io/npm/dm/@erlcjs/core?style=flat-square)](https://www.npmjs.com/package/@erlcjs/core)
+  [![bundle size](https://img.shields.io/bundlephobia/min/@erlcjs/core?style=flat-square)](https://bundlephobia.com/package/@erlcjs/core)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue?style=flat-square)](https://www.typescriptlang.org/)
+  [![license](https://img.shields.io/npm/l/@erlcjs/core?style=flat-square)](https://github.com/erlc-js/erlcjs/blob/main/LICENSE)
+
 `@erlcjs/core` is a lightweight, fully-featured, and strongly-typed API wrapper for Roblox's **Emergency Response: Liberty County (ER:LC)** private servers. It handles the low-level API mechanics, caching, and rate limiting so you can focus on building server integrations, moderation tools, and dashboards.
 
 ## Features
@@ -9,6 +15,10 @@
 *   **Real-time Event Emitters**: Track game updates using high-frequency Polling or Webhook Gateway modes.
 *   **Entity Cache**: Caches player states, spawned vehicles, active emergency calls, kill logs, and mod calls automatically.
 *   **Console Commands**: Easily trigger commands like `:kick`, `:kill`, `:pm` directly through JS/TS methods.
+
+## Prerequisites
+- Node.js V16.0.0 or higher or Bun V1.0.0 or higher.
+- A valid ER:LC Private Server API Key.
 
 ## Installation
 
@@ -61,6 +71,8 @@ import { Client, ERLCEvents } from '@erlcjs/core';
 
 const client = new Client({
   serverKey: 'YOUR_ERLC_SERVER_API_KEY',
+  globalKey: 'YOUR_PUBLIC_APP_GLOBAL_KEY',
+  globalAppId: 'YOUR_PUBLIC_APP_ID', 
   webhook: {
     enabled: true,
     port: 3000,
@@ -105,7 +117,32 @@ Issue custom commands directly:
 await client.commands.execute(':heal user');
 ```
 
+### Custom Commands
+Registering custom commands:
+```typescript
+client.registerCommand({
+    name: 'example',
+    aliases: [ 'ping' ],
+    execute: async ({ player, args }) => {
+        await player.message(`Pong! Args: ${args.join(' ')}`)
+    }
+})
+```
+Now when the user messages `;ping test` in-game, it will respond with `Pong! Args: test`.
+
+### Getting Your Authorization Link
+For public apps where authorizing the IP manually is not ideal:
+```typescript
+console.log(client.authorizationLink);
+```
+
 ## Documentation
 
 To read the complete API Reference and detailed guides, view the documentation site:
-[ERLCjs Documentation Portal](https://erlcjs.xyz)
+[erlc.js Documentation Portal](https://erlcjs.xyz)
+
+## Contributing
+Contributions are welcome! Please open an issue or submit a pull request on GitHub.
+
+## License
+Distributed under the Apache-2.0 License. See `LICENSE` for more information.

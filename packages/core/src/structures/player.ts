@@ -29,8 +29,8 @@ export class Player extends Base {
     public location!: {
         /** The X coordinate in-game. */
         x: number;
-        /** The Y coordinate in-game. */
-        y: number;
+        /** The Z coordinate in-game. */
+        z: number;
         /** The postal code of the street. */
         postalCode: string;
         /** The name of the street. */
@@ -70,7 +70,7 @@ export class Player extends Base {
         this.callsign = data.Callsign;
         this.location = {
             x: data.Location.LocationX,
-            y: data.Location.LocationY,
+            z: data.Location.LocationZ,
             postalCode: data.Location.PostalCode,
             streetName: data.Location.StreetName,
             buildingNumber: data.Location.BuildingNumber,
@@ -167,7 +167,7 @@ export class Player extends Base {
      * @returns A promise that resolves when the unhelper command is sent.
      */
     public async unhelper(): Promise<void> {
-        await this.client.commands.execute(`:helper ${this.username}`);
+        await this.client.commands.execute(`:unhelper ${this.username}`);
     }
 
     /**
@@ -231,6 +231,46 @@ export class Player extends Base {
     }
 
     /**
+     * Gets all vehicles owned by this player.
+     * @returns A collection of vehicles owned by this player.
+     * @remarks This is a convenience getter that filters the vehicle cache for vehicles owned by this player.
+     * It does not fetch new data from the server, so it may not be up-to-date.
+     */
+    public get vehicles() {
+        return Array.from(this.client.vehicles.cache.values()).filter(v => v.owner.id === this.id);
+    }
+
+    /**
+     * Gets all command logs associated with this player.
+     * @returns A collection of command logs associated with this player.
+     * @remarks This is a convenience getter that filters the command log cache for logs associated with this player.
+     * It does not fetch new data from the server, so it may not be up-to-date.
+     */
+    public get commandLogs() {
+        return Array.from(this.client.commandLogs.cache.values()).filter(log => log.player.id === this.id);
+    }
+
+    /**
+     * Gets all kill logs where this player is the killer.
+     * @returns A collection of kill logs where this player is the killer.
+     * @remarks This is a convenience getter that filters the kill log cache for logs where this player is the killer.
+     * It does not fetch new data from the server, so it may not be up-to-date.
+     */
+    public get kills() {
+        return Array.from(this.client.killLogs.cache.values()).filter(log => log.killer.id === this.id);
+    }
+
+    /**
+     * Gets all kill logs where this player is the killed.
+     * @returns A collection of kill logs where this player is the killed.
+     * @remarks This is a convenience getter that filters the kill log cache for logs where this player is the killed.
+     * It does not fetch new data from the server, so it may not be up-to-date.
+     */
+    public get deaths() {
+        return Array.from(this.client.killLogs.cache.values()).filter(log => log.killed.id === this.id);
+    }
+
+    /**
      * Converts this Player instance back into raw data structure.
      * @returns The raw player data.
      */
@@ -243,7 +283,7 @@ export class Player extends Base {
             WantedStars: this.wantedLevel,
             Location: {
                 LocationX: this.location.x,
-                LocationY: this.location.y,
+                LocationZ: this.location.z,
                 PostalCode: this.location.postalCode,
                 StreetName: this.location.streetName,
                 BuildingNumber: this.location.buildingNumber,

@@ -7,7 +7,7 @@ import { Client } from '../client/client.js';
 export class CommandManager {
     /**
      * Creates an instance of CommandManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
      */
     constructor(private readonly client: Client) {}
 

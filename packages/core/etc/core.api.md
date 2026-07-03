@@ -16,17 +16,25 @@ export class Base {
 // @public
 export class Client extends EventEmitter<ClientEvents> {
     constructor(options: ClientOptions);
+    get authorizationLink(): string;
     commandLogs: CommandLogManager;
     commands: CommandManager;
+    destroy(): void;
     emergencyCalls: EmergencyCallManager;
+    globalAppId?: string | number;
     killLogs: KillLogManager;
     modCalls: ModCallManager;
     // (undocumented)
     options: ClientOptions;
     players: PlayerManager;
+    registerCommand(cmd: InGameCommand): void;
     rest: RestManager;
     server: ServerManager;
+    serverId: string;
     staff: StaffManager;
+    startPolling(pollRateMs: number): void;
+    stopPolling(): void;
+    unregisterCommand(commandName: string): void;
     vehicles: VehicleManager;
     // (undocumented)
     waitFor<K extends keyof ClientEvents>(event: K, timeoutMs?: number): Promise<ClientEvents[K]>;
@@ -36,6 +44,7 @@ export class Client extends EventEmitter<ClientEvents> {
 export interface ClientEvents {
     [ERLCEvents.command]: [log: CommandLog];
     [ERLCEvents.customCommand]: [player: Player | string, command: string, argument: string];
+    [ERLCEvents.customCommand]: [player: Player, command: string, args: string[]];
     [ERLCEvents.emergencyCallAdd]: [call: EmergencyCall];
     [ERLCEvents.emergencyCallRemove]: [call: EmergencyCall];
     [ERLCEvents.emergencyCallUpdate]: [oldCall: EmergencyCall | null, newCall: EmergencyCall];
@@ -46,6 +55,7 @@ export interface ClientEvents {
     [ERLCEvents.playerLeave]: [player: Player];
     [ERLCEvents.playerUpdate]: [oldPlayer: Player | null, newPlayer: Player];
     [ERLCEvents.poll]: [server: RawServerData];
+    [ERLCEvents.ready]: [];
     [ERLCEvents.serverCreate]: [server: Server];
     [ERLCEvents.serverUpdate]: [oldServer: Server | null, newServer: Server];
     [ERLCEvents.staffAdd]: [staff: Staff, type: 'Admin' | 'Mod' | 'Helper'];
@@ -58,8 +68,17 @@ export interface ClientEvents {
 
 // @public
 export interface ClientOptions {
+    globalAppId?: string | number;
     globalKey?: string;
-    polling?: boolean;
+    // (undocumented)
+    maxCacheSize?: {
+        killLog?: number;
+        commandLog?: number;
+    };
+    polling?: {
+        enabled: boolean;
+        pollingRateMs?: number;
+    } | true;
     serverKey: string;
     webhook?: {
         enabled: boolean;
@@ -67,6 +86,12 @@ export interface ClientOptions {
         path?: string;
         secret?: string;
     };
+}
+
+// @public
+export class Collection<K, V> extends Map<K, V> {
+    filter(predicate: (value: V, key: K) => boolean): Collection<K, V>;
+    find(predicate: (value: V, key: K) => boolean): V | undefined;
 }
 
 // @public
@@ -83,10 +108,10 @@ export class CommandLog extends Base {
 
 // @public
 export class CommandLogManager {
-    constructor(client: Client);
-    cache: Map<string, CommandLog>;
-    fetchAll(): Promise<Map<string, CommandLog>>;
-    updateCache(rawCommands: RawCommandLog[]): Map<string, CommandLog>;
+    constructor(client: Client, maxCacheSize?: number | undefined);
+    cache: Collection<string, CommandLog>;
+    fetchAll(): Promise<Collection<string, CommandLog>>;
+    updateCache(rawCommands: RawCommandLog[]): Collection<string, CommandLog>;
 }
 
 // @public
@@ -97,6 +122,11 @@ export class CommandManager {
 
 // @public
 export function convertToPascalCase(obj: any): any;
+
+// @public
+export class CustomCommandError extends Error {
+    constructor(message?: string);
+}
 
 // @public
 export class EmergencyCall extends Base {
@@ -123,6 +153,15 @@ export class EmergencyCallManager {
     fetchAll(): Promise<Map<number, EmergencyCall>>;
     removeCall(callData: RawWebhookEmergencyCall): void;
     updateCache(rawCalls: RawEmergencyCall[]): Map<number, EmergencyCall>;
+    cache: Collection<number, EmergencyCall>;
+    fetchAll(): Promise<Collection<number, EmergencyCall>>;
+    removeCall(callData: RawWebhookEmergencyCall): void;
+    updateCache(rawCalls: RawEmergencyCall[]): Collection<number, EmergencyCall>;
+}
+
+// @public
+export class ERLCAPIError extends Error {
+    constructor(message?: string);
 }
 
 // @public
@@ -138,6 +177,7 @@ export enum ERLCEvents {
     playerLeave = "PLAYER_LEAVE",
     playerUpdate = "PLAYER_UPDATE",
     poll = "POLL",
+    ready = "READY",
     serverCreate = "SERVER_CREATE",
     serverUpdate = "SERVER_UPDATE",
     staffAdd = "STAFF_ADD",
@@ -146,6 +186,28 @@ export enum ERLCEvents {
     vehicleRemove = "VEHICLE_REMOVE",
     vehicleUpdate = "VEHICLE_UPDATE",
     webhookProbe = "WEBHOOK_PROBE"
+}
+
+// @public
+export interface InGameCommand {
+    aliases?: string[];
+    description?: string;
+    execute: (context: {
+        player: Player;
+        args: string[];
+    }) => void;
+    name: string;
+    permission?: (RawPlayerPermission | PlayerPermission)[];
+}
+
+// @public
+export class InvalidCommandError extends Error {
+    constructor(message?: string);
+}
+
+// @public
+export class InvalidGlobalKeyError extends Error {
+    constructor(message?: string);
 }
 
 // @public
@@ -169,10 +231,10 @@ export class KillLog extends Base {
 
 // @public
 export class KillLogManager {
-    constructor(client: Client);
-    cache: Map<string, KillLog>;
-    fetchAll(): Promise<Map<string, KillLog>>;
-    updateCache(rawCommands: RawKillLog[]): Map<string, KillLog>;
+    constructor(client: Client, maxCacheSize?: number | undefined);
+    cache: Collection<string, KillLog>;
+    fetchAll(): Promise<Collection<string, KillLog>>;
+    updateCache(rawCommands: RawKillLog[]): Collection<string, KillLog>;
 }
 
 // @public
@@ -192,9 +254,14 @@ export class ModCall extends Base {
 // @public
 export class ModCallManager {
     constructor(client: Client);
-    cache: Map<string, ModCall>;
-    fetchAll(): Promise<Map<string, ModCall>>;
-    updateCache(rawCommands: RawModCall[]): Map<string, ModCall>;
+    cache: Collection<string, ModCall>;
+    fetchAll(): Promise<Collection<string, ModCall>>;
+    updateCache(rawCommands: RawModCall[]): Collection<string, ModCall>;
+}
+
+// @public
+export class OutOfDateServerError extends Error {
+    constructor(message?: string);
 }
 
 // @public
@@ -203,16 +270,19 @@ export class Player extends Base {
     admin(): Promise<void>;
     ban(reason?: string): Promise<void>;
     callsign?: string;
+    get commandLogs(): CommandLog[];
+    get deaths(): KillLog[];
     heal(): Promise<void>;
     helper(): Promise<void>;
     id: number;
     jail(): Promise<void>;
     kick(reason?: string): Promise<void>;
     kill(): Promise<void>;
+    get kills(): KillLog[];
     load(): Promise<void>;
     location: {
         x: number;
-        y: number;
+        z: number;
         postalCode: string;
         streetName: string;
         buildingNumber: string;
@@ -231,6 +301,7 @@ export class Player extends Base {
     unhelper(): Promise<void>;
     unmod(): Promise<void>;
     username: string;
+    get vehicles(): Vehicle[];
     wanted(): Promise<void>;
     wantedLevel: number;
 }
@@ -238,13 +309,37 @@ export class Player extends Base {
 // @public
 export class PlayerManager {
     constructor(client: Client);
-    cache: Map<number, Player>;
-    fetchAll(): Promise<Map<number, Player>>;
+    cache: Collection<number, Player>;
+    fetchAll(): Promise<Collection<number, Player>>;
     getIdFromName(name: string): number | undefined;
     unadmin(userId: number | string): Promise<void>;
     unban(userId: number | string): Promise<void>;
     unmod(userId: number | string): Promise<void>;
     updateCache(rawPlayers: RawPlayerData[]): Map<number, Player>;
+    get onlineStaff(): Player[];
+    unadmin(userId: number | string): Promise<void>;
+    unban(userId: number | string): Promise<void>;
+    unhelper(userId: number | string): Promise<void>;
+    unmod(userId: number | string): Promise<void>;
+    updateCache(rawPlayers: RawPlayerData[]): Collection<number, Player>;
+    get wanted(): Player[];
+}
+
+// @public (undocumented)
+export enum PlayerPermission {
+    // (undocumented)
+    Administrator = "Server Administrator",
+    // (undocumented)
+    Mod = "Server Moderator",
+    // (undocumented)
+    Normal = "Normal",
+    // (undocumented)
+    Owner = "Server Owner"
+}
+
+// @public
+export class ProhibitedMessageError extends Error {
+    constructor(message?: string);
 }
 
 // @public
@@ -292,16 +387,19 @@ export interface RawPlayerData {
     Callsign: string;
     Location: {
         LocationX: number;
-        LocationY: number;
+        LocationZ: number;
         PostalCode: string;
         StreetName: string;
         BuildingNumber: string;
     };
-    Permission: 'Normal' | 'Server Administrator' | 'Server Owner' | 'Server Moderator';
+    Permission: RawPlayerPermission;
     Player: string;
     Team: string;
     WantedStars: number;
 }
+
+// @public (undocumented)
+export type RawPlayerPermission = 'Normal' | 'Server Administrator' | 'Server Owner' | 'Server Moderator';
 
 // @public
 export interface RawServerData {
@@ -360,6 +458,16 @@ export class RestManager {
 }
 
 // @public
+export class RestrictedCommandError extends Error {
+    constructor(message?: string);
+}
+
+// @public
+export class RestrictedResourceError extends Error {
+    constructor(message?: string);
+}
+
+// @public
 export class Server extends Base {
     constructor(client: Client, data: RawServerData);
     accVerifiedReq: 'Disabled' | 'Email' | 'Phone/ID';
@@ -377,10 +485,20 @@ export class Server extends Base {
 }
 
 // @public
+export class ServerBannedError extends Error {
+    constructor(message?: string);
+}
+
+// @public
 export class ServerManager {
     constructor(client: Client);
     cache?: Server;
     fetch(): Promise<RawServerData>;
+}
+
+// @public
+export class ServerOfflineError extends Error {
+    constructor(message?: string);
 }
 
 // @public
@@ -396,11 +514,21 @@ export class Staff extends Base {
 // @public
 export class StaffManager {
     constructor(client: Client);
-    admins: Map<number, Staff>;
-    fetchAll(): Promise<Map<string, Map<number, Staff>>>;
-    helpers: Map<number, Staff>;
-    mods: Map<number, Staff>;
-    updateCache(rawStaff: RawStaffData): Map<string, Map<number, Staff>>;
+    admins: Collection<number, Staff>;
+    fetchAll(): Promise<Collection<string, Collection<number, Staff>>>;
+    helpers: Collection<number, Staff>;
+    mods: Collection<number, Staff>;
+    updateCache(rawStaff: RawStaffData): Collection<string, Collection<number, Staff>>;
+}
+
+// @public
+export class TimeoutError extends Error {
+    constructor(message?: string);
+}
+
+// @public
+export class UnauthorizedError extends Error {
+    constructor(message?: string);
 }
 
 // @public
@@ -421,14 +549,401 @@ export class Vehicle extends Base {
 // @public
 export class VehicleManager {
     constructor(client: Client);
-    cache: Map<string, Vehicle>;
-    fetchAll(): Promise<Map<string, Vehicle>>;
-    updateCache(rawVehicles: RawVehicle[]): Map<string, Vehicle>;
+    cache: Collection<string, Vehicle>;
+    fetchAll(): Promise<Collection<string, Vehicle>>;
+    updateCache(rawVehicles: RawVehicle[]): Collection<string, Vehicle>;
+}
+
+// @public (undocumented)
+export enum Vehicles {
+    // (undocumented)
+    _4_WHEELER = "4-Wheeler",
+    // (undocumented)
+    AIKAWA_STREET_SWEEPER_2010 = "Aikawa Street Sweeper 2010",
+    // (undocumented)
+    ARROW_PHOENIX_NATIONALS_1977 = "Arrow Phoenix Nationals 1977",
+    // (undocumented)
+    AVERON_ANODIC_2024 = "Averon Anodic 2024",
+    // (undocumented)
+    AVERON_BREMEN_VS_GARDE_2023 = "AVERON Bremen VS Garde 2023",
+    // (undocumented)
+    AVERON_LM_2020 = "Averon LM 2020",
+    // (undocumented)
+    AVERON_LM_R_2020 = "Averon LM R 2020",
+    // (undocumented)
+    AVERON_Q8_2022 = "Averon Q8 2022",
+    // (undocumented)
+    AVERON_RS3_2020 = "Averon RS3 2020",
+    // (undocumented)
+    AVERON_S5_2010 = "Averon S5 2010",
+    // (undocumented)
+    BANK_TRUCK = "Bank Truck",
+    // (undocumented)
+    BKM_MUNICH_2020 = "BKM Munich 2020",
+    // (undocumented)
+    BKM_RISEN_ROADSTER_2020 = "BKM Risen Roadster 2020",
+    // (undocumented)
+    BRUSH_FALCON_ADVANCE_2020 = "Brush Falcon Advance+ 2020",
+    // (undocumented)
+    BULLHORN_BH15_2009 = "Bullhorn BH15 2009",
+    // (undocumented)
+    BULLHORN_BH15_SSV_2009 = "Bullhorn BH15 SSV 2009",
+    // (undocumented)
+    BULLHORN_DETERMINATOR_2008 = "Bullhorn Determinator 2008",
+    // (undocumented)
+    BULLHORN_DETERMINATOR_CT_2022 = "Bullhorn Determinator CT 2022",
+    // (undocumented)
+    BULLHORN_DETERMINATOR_SFP_FURY_2022 = "Bullhorn Determinator SFP Fury 2022",
+    // (undocumented)
+    BULLHORN_DETERMINATOR_SFP_FURY_BLACKJACK_WIDEBODY_2022 = "Bullhorn Determinator SFP Blackjack Widebody 2022",
+    // (undocumented)
+    BULLHORN_FOREMAN_1988 = "Bullhorn Foreman 1988",
+    // (undocumented)
+    BULLHORN_PRANCER_1969 = "Bullhorn Prancer 1969",
+    // (undocumented)
+    BULLHORN_PRANCER_COLONEL_FIELDS_1969 = "Bullhorn Prancer Colonel Fields 1969",
+    // (undocumented)
+    BULLHORN_PRANCER_CT_2020 = "Bullhorn Prancer CT 2020",
+    // (undocumented)
+    BULLHORN_PRANCER_FURY_WIDEBODY_2020 = "Bullhorn Prancer Fury Widebody 2020",
+    // (undocumented)
+    BULLHORN_PRANCER_FURY_WIDEBODY_PURSUIT_2020 = "Bullhorn Prancer Fury Widebody Pursuit 2020",
+    // (undocumented)
+    BULLHORN_PRANCER_HOTROD_1969 = "Bullhorn Prancer Hotrod 1969",
+    // (undocumented)
+    BULLHORN_PRANCER_PURSUIT_2011 = "Bullhorn Prancer Pursuit 2011",
+    // (undocumented)
+    BULLHORN_PRANCER_PURSUIT_2015 = "Bullhorn Prancer Pursuit 2015",
+    // (undocumented)
+    BULLHORN_PRANCER_S_2011 = "Bullhorn Prancer S 2011",
+    // (undocumented)
+    BULLHORN_PRANCER_TALLADEGA_1969 = "Bullhorn Prancer Talladega 1969",
+    // (undocumented)
+    BULLHORN_PUEBLO_PURSUIT_2022 = "Bullhorn Pueblo Pursuit 2022",
+    // (undocumented)
+    BULLHORN_PUEBLO_SFP_FURY_2022 = "Bullhorn Pueblo SFP Fury 2022",
+    // (undocumented)
+    BULLHORN_PUEBLO_V6_2022 = "Bullhorn Pueblo V6 2022",
+    // (undocumented)
+    CANYON_DESCENDER = "Canyon Descender",
+    // (undocumented)
+    CELESTIAL_TRUCKATRON_2024 = "Celestial Truckatron 2024",
+    // (undocumented)
+    CELESTIAL_TYPE_5_2022 = "Celestial Type-5 2022",
+    // (undocumented)
+    CELESTIAL_TYPE_6_2024 = "Celestial Type-6 2024",
+    // (undocumented)
+    CELESTIAL_TYPE_7_2022 = "Celestial Type-7 2022",
+    // (undocumented)
+    CHEVLON_AMIGO_LZR_2011 = "Chevlon Amigo LZR 2011",
+    // (undocumented)
+    CHEVLON_AMIGO_LZR_2016 = "Chevlon Amigo LZR 2016",
+    // (undocumented)
+    CHEVLON_AMIGO_S_2011 = "Chevlon Amigo S 2011",
+    // (undocumented)
+    CHEVLON_AMIGO_S_2016 = "Chevlon Amigo S 2016",
+    // (undocumented)
+    CHEVLON_ANTELOPE_SS_1994 = "Chevlon Antelope SS 1994",
+    // (undocumented)
+    CHEVLON_CAMION_2008 = "Chevlon Camion 2008",
+    // (undocumented)
+    CHEVLON_CAMION_2018 = "Chevlon Camion 2018",
+    // (undocumented)
+    CHEVLON_CAMION_2021 = "Chevlon Camion 2021",
+    // (undocumented)
+    CHEVLON_CAMION_GMT_800_LT_2002 = "Chevlon Camion GMT 800 LT 2002",
+    // (undocumented)
+    CHEVLON_CAMION_GMT_800_LTS_2002 = "Chevlon Camion GMT 800 LTS 2002",
+    // (undocumented)
+    CHEVLON_CAMION_GMT_800_S_2002 = "Chevlon Camion GMT 800 S 2002",
+    // (undocumented)
+    CHEVLON_CAMION_PPV_2000 = "Chevlon Camion PPV 2000",
+    // (undocumented)
+    CHEVLON_CAMION_PPV_2008 = "Chevlon Camion PPV 2008",
+    // (undocumented)
+    CHEVLON_CAMION_PPV_2018 = "Chevlon Camion PPV 2018",
+    // (undocumented)
+    CHEVLON_CAMION_PPV_2021 = "Chevlon Camion PPV 2021",
+    // (undocumented)
+    CHEVLON_CAPTAIN_1992 = "Chevlon Captain 1992",
+    // (undocumented)
+    CHEVLON_CAPTAIN_2009 = "Chevlon Captain 2009",
+    // (undocumented)
+    CHEVLON_CAPTAIN_ANTELOPE_SS_1994 = "Chevlon Captain Antelope SS 1994",
+    // (undocumented)
+    CHEVLON_CAPTAIN_LTZ_1994 = "Chevlon Captain LTZ 1994",
+    // (undocumented)
+    CHEVLON_CAPTAIN_PPV_2009 = "Chevlon Captain PPV 2009",
+    // (undocumented)
+    CHEVLON_COMMUTER_VAN_2006 = "Chevlon Commuter Van 2006",
+    // (undocumented)
+    CHEVLON_CORBETA_1M_EDITION_2014 = "Chevlon Corbeta 1M Edition 2014",
+    // (undocumented)
+    CHEVLON_CORBETA_8_2023 = "Chevlon Corbeta 8 2023",
+    // (undocumented)
+    CHEVLON_CORBETA_C2_1667 = "Chevlon Corbeta C2 1967",
+    // (undocumented)
+    CHEVLON_CORBETA_RZR_2014 = "Chevlon Corbeta RZR 2014",
+    // (undocumented)
+    CHEVLON_CORBETA_X08_2014 = "Chevlon Corbeta X08 2014",
+    // (undocumented)
+    CHEVLON_INFERNO_1981 = "Chevlon Inferno 1981",
+    // (undocumented)
+    CHEVLON_L15_1981 = "Chevlon L15 1981",
+    // (undocumented)
+    CHEVLON_L15_BRUSH_TRUCK_1981 = "Chevlon L15 Brush Truck 1981",
+    // (undocumented)
+    CHEVLON_L15_SIDE_STEP_1981 = "Chevlon L15 Side Step 1981",
+    // (undocumented)
+    CHEVLON_L35_EXTENDED_1981 = "Chevlon L35 Extended 1981",
+    // (undocumented)
+    CHEVLON_L_35_FLATBED_TOW_TRUCK_1981 = "Chevlon L35 Flatbed Tow Truck 1981",
+    // (undocumented)
+    CHEVLON_LANDSLIDE_2007 = "Chevlon Landslide 2007",
+    // (undocumented)
+    CHEVLON_NEWS_VAN_2006 = "Chevlon News Van 2006",
+    // (undocumented)
+    CHEVLON_PLATORO_2019 = "Chevlon Platoro 2019",
+    // (undocumented)
+    CHEVLON_PLATORO_PPV_2019 = "Chevlon Platoro PPV 2019",
+    // (undocumented)
+    CHEVLON_REVVER_2005 = "Chevlon Revver 2005",
+    // (undocumented)
+    CHRYSLUS_CHAMPION_2005 = "Chryslus Champion 2005",
+    // (undocumented)
+    ELYSION_SLICK_2014 = "Elysion Slick 2014",
+    // (undocumented)
+    EMEGERGENCY_SERVICES_FALCON_ADVANCE_2020 = "Emergency Services Falcon Advance+ 2020",
+    // (undocumented)
+    EXPLORER_DUMP_TRUCK_2015 = "Explorer Dump Truck 2015",
+    // (undocumented)
+    EXPLORER_FLATBED_TOW_TRUCK_2015 = "Explorer Flatbed Tow Truck 2015",
+    // (undocumented)
+    EXPLORER_SALT_TRUCK_2015 = "Explorer Salt Truck 2015",
+    // (undocumented)
+    EXPLORER_TRANSPORT_TRUCK_2015 = "Explorer Transport Truck 2015",
+    // (undocumented)
+    FALCON_ADVANCE_100_1956 = "Falcon Advance 100 1956",
+    // (undocumented)
+    FALCON_ADVANCE_100_HOLIDAY_EDITION_1956 = "Falcon Advance 100 Holiday Edition 1956",
+    // (undocumented)
+    FALCON_ADVANCE_350_2020 = "Falcon Advance 350 2020",
+    // (undocumented)
+    FALCON_ADVANCE_350_2022 = "Falcon Advance 350 2022",
+    // (undocumented)
+    FALCON_ADVANCE_350_ROYAL_RANCH_2020 = "Falcon Advance 350 Royal Ranch 2020",
+    // (undocumented)
+    FALCON_ADVANCE_450_2020 = "Falcon Advance 450 2020",
+    // (undocumented)
+    FALCON_ADVANCE_450_AMBULANCE_2022 = "Falcon Advance 450 Ambulance 2022",
+    // (undocumented)
+    FALCON_ADVANCE_450_BUCKET_TRUCK_2020 = "Falcon Advance 450 Bucket Truck 2020",
+    // (undocumented)
+    FALCON_ADVANCE_450_ROADSIDE_ASSIST_2020 = "Falcon Advance 450 Roadside Assist 2020",
+    // (undocumented)
+    FALCON_ADVANCE_450_ROYAL_RANCH_2020 = "Falcon Advance 450 Royal Ranch 2020",
+    // (undocumented)
+    FALCON_ADVANCE_450_TOW_TRUCK_2020 = "Falcon Advance 450 Tow Truck 2020",
+    // (undocumented)
+    FALCON_ADVANCE_600_PUMPER_1956 = "Falcon Advance 600 Pumper 1956",
+    // (undocumented)
+    FALCON_ADVANCE_XET_2022 = "Falcon Advance XET 2022",
+    // (undocumented)
+    FALCON_AQUARIUS_STP_2017 = "Falcon Aquarius STP 2017",
+    // (undocumented)
+    FALCON_COUPE_1934 = "Falcon Coupe 1934",
+    // (undocumented)
+    FALCON_E_STATION_2024 = "Falcon eStation 2024",
+    // (undocumented)
+    FALCON_ESTALLION_2024 = "Falcon eStallion 2024",
+    // (undocumented)
+    FALCON_GLOBAL_350_2013 = "Falcon Global 350 2013",
+    // (undocumented)
+    FALCON_GLOBAL_450_AMBULANCE_2018 = "Falcon Global 450 Ambulance 2018",
+    // (undocumented)
+    FALCON_GLOBAL_450_UTILITY_2018 = "Falcon Global 450 Utility 2018",
+    // (undocumented)
+    FALCON_HERITAGE_2021 = "Falcon Heritage 2021",
+    // (undocumented)
+    FALCON_HERITAGE_TRACK_2022 = "Falcon Heritage Track 2022",
+    // (undocumented)
+    FALCON_INTERCEPTOR_SEDAN_2017 = "Falcon Interceptor Sedan 2017",
+    // (undocumented)
+    FALCON_INTERCEPTOR_UTILITY_2013 = "Falcon Interceptor Utility 2013",
+    // (undocumented)
+    FALCON_INTERCEPTOR_UTILITY_2019 = "Falcon Interceptor Utility 2019",
+    // (undocumented)
+    FALCON_INTERCEPTOR_UTILITY_2024 = "Falcon Interccceptor Utility 2024",
+    // (undocumented)
+    FALCON_PRIME_EQUES_2003 = "Falcon Prime Eques 2003",
+    // (undocumented)
+    FALCON_PRIME_EQUES_INTERCEPTOR_2003 = "Falcon Prime Eques Interceptor 2003",
+    // (undocumented)
+    FALCON_PRIME_EQUES_TAXI_2003 = "Falcon Prime Eques Taxi 2003",
+    // (undocumented)
+    FALCON_RAMPAGE_BEAST_2021 = "Falcon Rampage Beast 2021",
+    // (undocumented)
+    FALCON_RAMPAGE_BIGFOOT_2_DOOR_2021 = "Falcon Rampage Bigfoot 2-Door 2021",
+    // (undocumented)
+    FALCON_RAMPAGE_INTERCEPTOR_2021 = "Falcon Rampage Interceptor 2021",
+    // (undocumented)
+    FALCON_RAMPAGE_PRAIRIE_2021 = "Falcon Rampage Prairie 2021",
+    // (undocumented)
+    FALCON_SCAVENGER_2013 = "Falcon Scavenger 2013",
+    // (undocumented)
+    FALCON_SCAVENGER_2016 = "Falcon Scavenger 2016",
+    // (undocumented)
+    FALCON_SCAVENGER_ROYAL_RANCH_2024 = "Falcon Scavenger Royal Ranch 2024",
+    // (undocumented)
+    FALCON_SCAVENGER_SECURITY_2013 = "Falcon Scavenger Security 2013",
+    // (undocumented)
+    FALCON_SCAVENGER_TAXI_2024 = "Falcon Scavenger Taxi 2024",
+    // (undocumented)
+    FALCON_STALLION_350_1969 = "Falcon Stallion 350 1969",
+    // (undocumented)
+    FALCON_STALLION_350_2015 = "Falcon Stallion 350 2015",
+    // (undocumented)
+    FALCON_TRAVELLER_2002 = "Falcon Traveller 2002",
+    // (undocumented)
+    FALCON_TRAVELLER_2003 = "Falcon Traveller 2003",
+    // (undocumented)
+    FALCON_TRAVELLER_PPV_2022 = "Falcon Traveller PPV 2022",
+    // (undocumented)
+    FARM_TRACTOR_5100M = "Farm Tractor 5100M",
+    // (undocumented)
+    FERDINAND_JALAPENO_TURBO_2022 = "Ferdinand Jalapeno Turbo 2022",
+    // (undocumented)
+    FORKLIFT = "Forklift",
+    // (undocumented)
+    FOUR_WHEELER = "4-Wheeler",
+    // (undocumented)
+    FRONT_LOADER_GARBAGE_TRUCK = "Front Loader Garbage Truck",
+    // (undocumented)
+    FRONT_LOADER_TRACTOR = "Front Loader Tractor",
+    // (undocumented)
+    FUEL_TANKER = "Fuel Tanker",
+    // (undocumented)
+    GARBAGE_TRUCK = "Garbage Truck",
+    // (undocumented)
+    GHOUL_1_1959 = "Ghoul-1 1959",
+    // (undocumented)
+    HEAVY_RESCUE = "Heavy Rescue",
+    // (undocumented)
+    KOVAC_HELADERA_2023 = "Kovac Heladera 2023",
+    // (undocumented)
+    LA_MESA_FOOD_TRUCK = "La Mesa Food Truck",
+    // (undocumented)
+    LAWN_MOWER = "Lawn Mower",
+    // (undocumented)
+    LELAND_LIMO_2018 = "Leland Limo 2018",
+    // (undocumented)
+    LELAND_LTS5_V_BLACKWING_2023 = "Leland LTS5-V Blackwing 2023",
+    // (undocumented)
+    LELAND_LTS_2010 = "Leland LTS 2010",
+    // (undocumented)
+    LELAND_SERIES_67_SKYVIEW_1959 = "Leland Series 67 Skyview 1959",
+    // (undocumented)
+    LELAND_VAULT_2020 = "Leland Vault 2020",
+    // (undocumented)
+    MAIL_TRUCK = "Mail Truck",
+    // (undocumented)
+    MAIL_VAN = "Mail Van",
+    // (undocumented)
+    MEDICAL_BUS = "Medical Bus",
+    // (undocumented)
+    METRO_TRANSIT_BUS = "Metro Transit Bus",
+    // (undocumented)
+    MOBILE_COMMAND_2005 = "Mobile Command 2005",
+    // (undocumented)
+    MOBILE_COMMAND_CENTER = "Mobile Command Center",
+    // (undocumented)
+    NAVARA_BOUNDARY_2022 = "Navara Boundary 2022",
+    // (undocumented)
+    NAVARA_HORIZON_2013 = "Navara Horizon 2013",
+    // (undocumented)
+    NAVARA_IMPERIUM_2020 = "Navara Imperium 2020",
+    // (undocumented)
+    OVERLAND_APACHE_1995 = "Overland Apache 1995",
+    // (undocumented)
+    OVERLAND_APACHE_2011 = "Overland Apache 2011",
+    // (undocumented)
+    OVERLAND_APACHE_SFP_2020 = "Overland Apache SFP 2020",
+    // (undocumented)
+    OVERLAND_BUCKAROO_2018 = "Overland Buckaroo 2018",
+    // (undocumented)
+    PEA_CAR_2025 = "Pea Car 2025",
+    // (undocumented)
+    PRISONER_TRANSPORT_BUS = "Prisoner Transport Bus",
+    // (undocumented)
+    REDLINE_FIRE_ENGINE = "Redline Fire Engine",
+    // (undocumented)
+    REDLINE_HEAVY_TANKER_2014 = "Redline Heavy Tanker 2014",
+    // (undocumented)
+    REDLINE_MIDMOUNT_LADDER = "Redline Midmount Ladder",
+    // (undocumented)
+    REDLINE_REARMOUNT_LADDER = "Redline Rearmount Ladder",
+    // (undocumented)
+    REDLINE_TANKER_2014 = "Redline Tanker 2014",
+    // (undocumented)
+    REDLINE_TYPE_3_BRUSH_TRUCK_2014 = "Redline Type 3 Brush Truck 2014",
+    // (undocumented)
+    SENTINEL_PLATINUM_1968 = "Sentinel Platinum 1968",
+    // (undocumented)
+    SHUTTLE_BUS = "Shuttle Bus",
+    // (undocumented)
+    SPECIAL_OPERATIONS_UNIT = "Special Operations Unit",
+    // (undocumented)
+    SQUAD_FALCON_ADVANCE_2020 = "Squad Falcon Advance+ 2020",
+    // (undocumented)
+    STRUGATTI_ETTORE_2020 = "Strugatti Ettore 2020",
+    // (undocumented)
+    STUTTGART_EXECUTIVE_2021 = "Stuttgart Executive 2021",
+    // (undocumented)
+    STUTTGART_LANDSCHAFT_2022 = "Stuttgart Landschaft 2022",
+    // (undocumented)
+    STUTTGART_RUNNER_PRISONER_TRANSPORT_2020 = "Stuttgart Runner Prisoner Transport 2020",
+    // (undocumented)
+    STUTTGART_VIERTURIG_2021 = "Stuttgart Vierturig 2021",
+    // (undocumented)
+    SUMO_REFLEXION_2022 = "Sumo Reflexion 2022",
+    // (undocumented)
+    SURREY_650S_2016 = "Surrey 650S 2016",
+    // (undocumented)
+    SWAT_ARMOURED_TRUCK_2011 = "SWAT Armoured Truck 2011",
+    // (undocumented)
+    TAKEO_EXPERIENCE_2021 = "Takeo Experience 2021",
+    // (undocumented)
+    TERRAIN_TRAVELLER_2022 = "Terrain Traveller 2022",
+    // (undocumented)
+    THREE_GUYS_FOOD_TRUCK = "Three Guys Food Truck",
+    // (undocumented)
+    VELLFIRE_EVEREST_VRD_MAX_2023 = "Vellfire Everest VRD Max 2023",
+    // (undocumented)
+    VELLFIRE_EVERTT_CREW_CAB_1995 = "Vellfire Evertt Crew Cab 1995",
+    // (undocumented)
+    VELLFIRE_EVERTT_EXTENDED_CAB_1995 = "Vellfire Evertt Extended Cab 1995",
+    // (undocumented)
+    VELLFIRE_PIONEER_2019 = "Vellfire Pioneer 2019",
+    // (undocumented)
+    VELLFIRE_PIONEER_TARGA_2019 = "Vellfire Pioneer Targa 2019",
+    // (undocumented)
+    VELLFIRE_PRAIRIE_2022 = "Vellfire Prairie 2022",
+    // (undocumented)
+    VELLFIRE_PRIMA_2009 = "Vellfire Prima 2009",
+    // (undocumented)
+    VELLFIRE_RIPTIDE_2020 = "Vellfire Riptide 2020",
+    // (undocumented)
+    VELLFIRE_RUNABOUT_1984 = "Vellfire Runabout 1984",
+    // (undocumented)
+    VINNIMADE_HEAVY_ROTATOR_2013 = "Vinnimade Heavy Rotator 2013",
+    // (undocumented)
+    VINNIMADE_HEAVY_WRECKER_2013 = "Vinnimade Heavy Wrecker 2013"
 }
 
 // @public
 export class WebhookServer {
     constructor(client: Client);
+    close(): void;
     listen(): void;
 }
 

@@ -89,7 +89,7 @@ export class WebhookServer {
      * Internally processes gateway event payload.
      * @param payload - Raw JSON payload received.
      */
-    private handleGatewayEvent(payload: any) {
+    private async handleGatewayEvent(payload: any) {
         const events = payload.events;
         for (const event of events) {
             if (event.event === 'WebhookProbe') {
@@ -99,13 +99,28 @@ export class WebhookServer {
             } else if (event.event === 'EmergencyCallEnded') {
                 this.client.emergencyCalls.removeCall(event.data);
             } else if (event.event === 'CustomCommand') {
+                let command = event.data?.command?.trim();
+                if (command.startsWith(';')) command = command.slice(1);
+                if (!command) continue;
+                const args = event.data?.argument ? event.data.argument.trim().split(' ') : [];
+                let player = this.client.players.cache.get(Number(event.origin));
+                if (!player) {
+                    await this.client.waitFor(ERLCEvents.poll, 5000);
+                    player = this.client.players.cache.get(Number(event.origin));
+                    if (!player) continue;
+                }
                 this.client.emit(
                     ERLCEvents.customCommand,
-                    this.client.players.cache.get(Number(event.data?.origin)) ?? event.data?.origin,
-                    event.data?.command,
-                    event.data?.argument,
+                    player,
+                    command,
+                    args,
                 );
             }
         }
+    }
+
+    /** Closes the webhook server. */
+    public close() {
+        this.server.close();
     }
 }

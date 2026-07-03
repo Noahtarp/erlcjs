@@ -1,4 +1,5 @@
 import { Client, ERLCEvents } from '../client/client.js';
+import { Collection } from '../index.js';
 import { ModCall } from '../structures/modcall.js';
 import { type RawModCall, type RawServerData } from '../types/index.js';
 
@@ -8,22 +9,22 @@ import { type RawModCall, type RawServerData } from '../types/index.js';
  */
 export class ModCallManager {
     /**
-     * Map cache of logged moderator calls, keyed by a composite `Caller:Timestamp` key.
+     * Collection cache of logged moderator calls, keyed by a composite `Caller:Timestamp` key.
      */
-    public cache = new Map<string, ModCall>();
+    public cache = new Collection<string, ModCall>();
 
     /**
      * Creates an instance of ModCallManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
      */
     constructor(private readonly client: Client) {}
 
     /**
      * Fetches all moderator calls from the game server.
      * Updates the moderator call cache.
-     * @returns A promise resolving to a Map of ModCalls.
+     * @returns A promise resolving to a Collection of ModCalls.
      */
-    public async fetchAll(): Promise<Map<string, ModCall>> {
+    public async fetchAll(): Promise<Collection<string, ModCall>> {
         const rawServer: RawServerData = await this.client.rest.request(
             'GET',
             '/v2/server?ModCalls=true',
@@ -37,7 +38,7 @@ export class ModCallManager {
      * Re-synchronizes the cache with the raw moderator calls.
      * Emits a modCall event for new calls.
      * @param rawCommands - Raw moderator calls payload.
-     * @returns The updated ModCall cache Map.
+     * @returns The updated ModCall cache Collection.
      */
     public updateCache(rawCommands: RawModCall[]) {
         for (const rawData of rawCommands) {

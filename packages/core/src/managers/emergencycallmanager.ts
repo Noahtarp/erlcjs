@@ -6,6 +6,7 @@ import {
     type RawWebhookEmergencyCall,
 } from '../types/index.js';
 import { convertToPascalCase } from '../util/index.js';
+import { Collection } from '../util/collection.js';
 
 /**
  * Manager responsible for fetching, caching, and updating active EmergencyCall structures.
@@ -13,22 +14,22 @@ import { convertToPascalCase } from '../util/index.js';
  */
 export class EmergencyCallManager {
     /**
-     * Map cache of active emergency calls, keyed by call number.
+     * Collection cache of active emergency calls, keyed by call number.
      */
-    public cache = new Map<number, EmergencyCall>();
+    public cache = new Collection<number, EmergencyCall>();
 
     /**
      * Creates an instance of EmergencyCallManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
      */
     constructor(private readonly client: Client) {}
 
     /**
      * Fetches all active emergency calls from the game server.
      * Updates the emergency call cache.
-     * @returns A promise resolving to a Map of active EmergencyCalls.
+     * @returns A promise resolving to a Collection of active EmergencyCalls.
      */
-    public async fetchAll(): Promise<Map<number, EmergencyCall>> {
+    public async fetchAll(): Promise<Collection<number, EmergencyCall>> {
         const rawServer: RawServerData = await this.client.rest.request(
             'GET',
             '/v2/server?EmergencyCalls=true',
@@ -42,7 +43,7 @@ export class EmergencyCallManager {
      * Re-synchronizes the cache with the raw emergency calls payload.
      * Emits emergencyCallAdd, emergencyCallRemove, and emergencyCallUpdate events.
      * @param rawCalls - Raw active emergency calls payload.
-     * @returns The updated EmergencyCall cache Map.
+     * @returns The updated EmergencyCall cache Collection.
      */
     public updateCache(rawCalls: RawEmergencyCall[]) {
         const activeCalls = new Set<number>();

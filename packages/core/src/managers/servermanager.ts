@@ -14,7 +14,7 @@ export class ServerManager {
 
     /**
      * Creates an instance of ServerManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
      */
     constructor(private readonly client: Client) {}
 

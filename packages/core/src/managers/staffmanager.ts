@@ -1,39 +1,40 @@
 import { Client, ERLCEvents } from '../client/client.js';
+import { Collection } from '../index.js';
 import { Staff } from '../structures/staff.js';
-import type { RawServerData, RawStaffData, RawVehicle } from '../types/index.js';
+import type { RawServerData, RawStaffData } from '../types/index.js';
 
 /**
- * Manager responsible for fetching, caching, and updating Vehicle structures.
+ * Manager responsible for fetching, caching, and updating Staff structures.
  * @public
  */
 export class StaffManager {
     /**
-     * Map cache of admins, keyed by their userId.
+     * Collection cache of admins, keyed by their userId.
      */
-    public admins = new Map<number, Staff>();
+    public admins = new Collection<number, Staff>();
 
     /**
-     * Map cache of mods, keyed by their userId.
+     * Collection cache of mods, keyed by their userId.
      */
-    public mods = new Map<number, Staff>();
+    public mods = new Collection<number, Staff>();
 
     /**
-     * Map cache of helpers, keyed by their userId.
+     * Collection cache of helpers, keyed by their userId.
      */
-    public helpers = new Map<number, Staff>();
+    public helpers = new Collection<number, Staff>();
 
     /**
      * Creates an instance of StaffManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
      */
     constructor(private readonly client: Client) {}
 
     /**
      * Fetches all staff members.
      * Updates the staff cache.
-     * @returns A promise resolving to a Map of active Vehicles.
+     * @returns A promise resolving to a Collection of active Vehicles.
      */
-    public async fetchAll(): Promise<Map<string, Map<number, Staff>>> {
+    public async fetchAll(): Promise<Collection<string, Collection<number, Staff>>> {
         const rawServer: RawServerData = await this.client.rest.request(
             'GET',
             '/v2/server?Staff=true',
@@ -47,14 +48,14 @@ export class StaffManager {
      * Re-synchronizes the cache with the raw staff list from the API.
      * Emits staffAdd and staffRemove events.
      * @param rawStaff - Raw staff list payload.
-     * @returns The updated staff cache Map.
+     * @returns The updated staff cache Collection.
      */
     public updateCache(rawStaff: RawStaffData) {
         this._updateCache(rawStaff.Admins, 'Admin');
         this._updateCache(rawStaff.Mods, 'Mod');
         this._updateCache(rawStaff.Helpers, 'Helper');
 
-        return new Map<string, Map<number, Staff>>()
+        return new Collection<string, Collection<number, Staff>>()
             .set('Admins', this.admins)
             .set('Mods', this.mods)
             .set('Helpers', this.helpers);
@@ -63,7 +64,7 @@ export class StaffManager {
     private _updateCache(data: Record<string, string>, type: 'Admin' | 'Mod' | 'Helper') {
         const activeUserIds = new Set<number>();
         const types = `${type}s`;
-        let cache: Map<number, Staff>;
+        let cache: Collection<number, Staff>;
         if (type === 'Admin') cache = this.admins;
         else if (type === 'Mod') cache = this.mods;
         else cache = this.helpers;
@@ -72,13 +73,13 @@ export class StaffManager {
             activeUserIds.add(Number(userId));
             const cachedUser = cache.get(Number(userId));
 
-            if (cachedUser) return;
+            if (cachedUser) continue;
             const newStaff = new Staff(this.client, userId, username);
             cache.set(Number(userId), newStaff);
             this.client.emit(ERLCEvents.staffAdd, newStaff, type);
         }
 
-        for (const cachedId of this.admins.keys()) {
+        for (const cachedId of cache.keys()) {
             if (!activeUserIds.has(cachedId)) {
                 this.client.emit(ERLCEvents.staffRemove, cache.get(cachedId)!, type);
                 cache.delete(cachedId);

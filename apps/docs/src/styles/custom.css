@@ -109,3 +109,76 @@ a:hover {
 [data-theme='light'] .pagination-links span {
     color: var(--sl-color-black);
 }
+
+/* ─── Contributors Section ──────────────────────────────────────────────── */
+.contributors-section {
+    margin-top: 3rem;
+    padding: 1.75rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme='light'] .contributors-section {
+    border-color: rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.contributors-heading {
+    margin: 0 0 0.25rem 0 !important;
+    font-size: 1.15rem !important;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.contributors-subtext {
+    margin: 0 0 1.25rem 0;
+    font-size: 0.875rem;
+    opacity: 0.6;
+}
+
+.contributors-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+
+a.contributor {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem 0.35rem 0.35rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    text-decoration: none !important;
+    color: inherit !important;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+}
+
+[data-theme='light'] a.contributor {
+    border-color: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.03);
+}
+
+a.contributor:hover {
+    border-color: var(--sl-color-accent);
+    background: rgba(224, 40, 46, 0.08);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(224, 40, 46, 0.12);
+    color: inherit !important;
+}
+
+a.contributor img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.contributor-name {
+    font-weight: 500;
+    white-space: nowrap;
+}

@@ -1,6 +1,7 @@
 import { Client, ERLCEvents } from '../client/client.js';
 import { CommandLog } from '../structures/commandlog.js';
 import { type RawCommandLog, type RawServerData } from '../types/index.js';
+import { Collection } from '../util/collection.js';
 
 /**
  * Manager responsible for fetching, caching, and updating CommandLog structures.
@@ -8,22 +9,23 @@ import { type RawCommandLog, type RawServerData } from '../types/index.js';
  */
 export class CommandLogManager {
     /**
-     * Map cache of logged commands, keyed by a composite `Player:Timestamp` key.
+     * Collection cache of logged commands, keyed by a composite `Player:Timestamp` key.
      */
-    public cache = new Map<string, CommandLog>();
+    public cache = new Collection<string, CommandLog>();
 
     /**
      * Creates an instance of CommandLogManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
+     * @param maxCacheSize - The maximum number of command logs to hold in cache.
      */
-    constructor(private readonly client: Client) {}
+    constructor(private readonly client: Client, private readonly maxCacheSize?: number) {}
 
     /**
      * Fetches all command logs from the game server.
      * Updates the command log cache.
-     * @returns A promise resolving to a Map of CommandLogs.
+     * @returns A promise resolving to a Collection of CommandLogs.
      */
-    public async fetchAll(): Promise<Map<string, CommandLog>> {
+    public async fetchAll(): Promise<Collection<string, CommandLog>> {
         const rawServer: RawServerData = await this.client.rest.request(
             'GET',
             '/v2/server?CommandLogs=true',
@@ -37,7 +39,7 @@ export class CommandLogManager {
      * Re-synchronizes the cache with the raw command logs.
      * Emits command event for new logs.
      * @param rawCommands - Raw command logs payload.
-     * @returns The updated CommandLog cache Map.
+     * @returns The updated CommandLog cache Collection.
      */
     public updateCache(rawCommands: RawCommandLog[]) {
         for (const rawData of rawCommands) {
@@ -48,6 +50,14 @@ export class CommandLogManager {
                 const newCommand = new CommandLog(this.client, rawData);
                 this.cache.set(key, newCommand);
                 this.client.emit(ERLCEvents.command, newCommand);
+            }
+        }
+
+        if (this.maxCacheSize && this.maxCacheSize > 0) {
+            while (this.cache.size > this.maxCacheSize) {
+                const oldestKey = this.cache.keys().next().value;
+                if (oldestKey === undefined) break;
+                this.cache.delete(oldestKey);
             }
         }
 

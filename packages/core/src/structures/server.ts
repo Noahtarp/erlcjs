@@ -81,13 +81,13 @@ export class Server extends Base {
         return (
             this.name === data.Name &&
             this.ownerId === data.OwnerId &&
-            this.coOwnerIds === data.CoOwnerIds &&
+            JSON.stringify(this.coOwnerIds) === JSON.stringify(data.CoOwnerIds) &&
             this.currentPlayers === data.CurrentPlayers &&
             this.maxPlayers === data.MaxPlayers &&
             this.joinKey === data.JoinKey &&
             this.accVerifiedReq === data.AccVerifiedReq &&
             this.teamBalance === data.TeamBalance &&
-            this.queue === data.Queue
+            JSON.stringify(this.queue) === JSON.stringify(data.Queue)
         );
     }
 

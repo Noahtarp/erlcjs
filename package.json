@@ -2,6 +2,13 @@
   "name": "erlcjs",
   "private": true,
   "homepage": "erlcjs.xyz",
+  "keywords": [
+    "erlc",
+    "roblox",
+    "prc",
+    "wrapper",
+    "api"
+  ],
   "scripts": {
     "build": "pnpm turbo run build --filter=!apps-docs",
     "lint": "pnpm turbo run lint",

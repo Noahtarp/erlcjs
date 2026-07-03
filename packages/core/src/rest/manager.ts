@@ -1,5 +1,5 @@
 import { type ClientOptions } from '../types/index.js';
-import { InvalidServerKeyError } from '../errors/index.js';
+import { ERLCAPIError, InvalidCommandError, InvalidGlobalKeyError, InvalidServerKeyError, OutOfDateServerError, ProhibitedMessageError, RestrictedCommandError, RestrictedResourceError, ServerBannedError, ServerOfflineError, UnauthorizedError } from '../errors/index.js';
 
 interface BucketInfo {
     limit: number;
@@ -40,38 +40,94 @@ export class RestManager {
      */
     public async request(method: 'GET' | 'POST', endpoint: string, body?: any): Promise<any> {
         return new Promise((resolve, reject) => {
+            let attempts = 0;
+            const maxRetries = 3;
+
             const executeTask = async () => {
+                let response: Response;
+                
                 try {
-                    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+                    response = await fetch(`${this.baseUrl}${endpoint}`, {
                         method,
                         headers: {
                             'Server-Key': this.options.serverKey,
                             'Content-Type': 'application/json',
                             ...(this.options.globalKey && {
-                                Authorization: `Bearer ${this.options.globalKey}`,
+                                Authorization: `${this.options.globalKey}`,
                             }),
                         },
                         body: body ? JSON.stringify(body) : undefined,
                     });
+                } catch(networkError) {
+                    if (attempts < maxRetries) {
+                        attempts++;
+                        const delay = Math.pow(2, attempts) * 1000;
+                        await new Promise((res) => setTimeout(res, delay));
+                        return executeTask();
+                    }
+                    return reject(new Error(`Network error: ${networkError}`));
+                }
 
+                try {
                     this.updateRateLimits(endpoint, response.headers);
 
-                    if (response.status === 403) {
-                        throw new InvalidServerKeyError();
+                    let data;
+                    try {
+                        data = await response.json();
+                    } catch(err) {
+                        data = {};
+                    }
+                    
+                    if (data.code) {
+                        switch(data.code) {
+                            case 2000:
+                            case 2001:
+                            case 2002:
+                                return reject(new InvalidServerKeyError());
+                            case 2003:
+                                return reject(new InvalidGlobalKeyError())
+                            case 2004:
+                                return reject(new ServerBannedError());
+                            case 3001:
+                                return reject(new InvalidCommandError());
+                            case 3002:
+                                return reject(new ServerOfflineError());
+                            case 4000:
+                                return reject(new UnauthorizedError());
+                            case 4002:
+                                return reject(new RestrictedCommandError());
+                            case 4003:
+                                return reject(new ProhibitedMessageError());
+                            case 9998:
+                                return reject(new RestrictedResourceError());
+                            case 9999:
+                                return reject(new OutOfDateServerError());
+                        }
                     }
 
-                    if (response.status === 429) {
+                    if (response.status === 403) {
+                        return reject(new InvalidServerKeyError());
+                    }
+
+                    if (response.status === 429 || data.code === 4001) {
                         this.queue.unshift({ endpoint, execute: executeTask });
                         return;
                     }
 
-                    if (!response.ok) {
-                        throw new Error(
-                            `[ERLC API Error] ${response.status}: ${response.statusText}`,
-                        );
+                    if (response.status >= 500 && response.status < 600 || data.code === 1001 || data.code === 1002 || data.code === 0) {
+                        if (attempts < maxRetries) {
+                            attempts++;
+                            const delay = Math.pow(2, attempts) * 1000;
+                            await new Promise((res) => setTimeout(res, delay));
+                            return executeTask();
+                        }
+                        return reject(new ERLCAPIError(`${response.status}: ${response.statusText}\n${data.code}: ${data.message}`));
                     }
 
-                    const data = await response.json();
+                    if (!response.ok) {
+                        return reject(new ERLCAPIError(`${response.status}: ${response.statusText}\n${data.code}: ${data.message}`));
+                    }
+
                     resolve(data);
                 } catch (error) {
                     reject(error);

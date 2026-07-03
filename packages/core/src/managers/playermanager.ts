@@ -1,4 +1,5 @@
 import { Client, ERLCEvents } from '../client/client.js';
+import { Collection } from '../index.js';
 import { Player } from '../structures/player.js';
 import { type RawPlayerData, type RawServerData } from '../types/index.js';
 
@@ -8,23 +9,23 @@ import { type RawPlayerData, type RawServerData } from '../types/index.js';
  */
 export class PlayerManager {
     /**
-     * Map cache of online Players, keyed by their UserId.
+     * Collection cache of online Players, keyed by their UserId.
      */
-    public cache = new Map<number, Player>();
-    private nameToId = new Map<string, number>();
+    public cache = new Collection<number, Player>();
+    private nameToId = new Collection<string, number>();
 
     /**
      * Creates an instance of PlayerManager.
-     * @param client - The ERLCApi client.
+     * @param client - The erlcjs client.
      */
     constructor(private readonly client: Client) {}
 
     /**
      * Fetches all active players currently in the game server.
      * Updates the player cache.
-     * @returns A promise resolving to a Map of active Players.
+     * @returns A promise resolving to a Collection of active Players.
      */
-    public async fetchAll(): Promise<Map<number, Player>> {
+    public async fetchAll(): Promise<Collection<number, Player>> {
         const rawServer: RawServerData = await this.client.rest.request(
             'GET',
             '/v2/server?Players=true',
@@ -38,7 +39,7 @@ export class PlayerManager {
      * Re-synchronizes the cache with the raw player list from the API.
      * Emits playerJoin, playerLeave, and playerUpdate events.
      * @param rawPlayers - Raw player list payload.
-     * @returns The updated Player cache Map.
+     * @returns The updated Player cache Collection.
      */
     public updateCache(rawPlayers: RawPlayerData[]) {
         const activeIds = new Set<number>();
@@ -99,6 +100,14 @@ export class PlayerManager {
     }
 
     /**
+     * Unhelpers a player from their userId.
+     * @param userId - The userId to unhelper.
+     */
+    public async unhelper(userId: number | string) {
+        await this.client.commands.execute(`:unhelper ${userId}`);
+    }
+
+    /**
      * Unmods a player from their userId.
      * @param userId - The userId to unmod.
      */
@@ -112,5 +121,21 @@ export class PlayerManager {
      */
     public async unadmin(userId: number | string) {
         await this.client.commands.execute(`:unadmin ${userId}`);
+    }
+
+    /**
+     * Gets a list of all players with a wanted level greater than 0.
+     * @returns An array of Player instances with a wanted level greater than 0.
+     */
+    public get wanted() {
+        return Array.from(this.cache.values()).filter(p => p.wantedLevel > 0);
+    }
+
+    /**
+     * Gets a list of all players with a permission level other than 'Normal'.
+     * @returns An array of Player instances with elevated permissions.
+     */
+    public get onlineStaff() {
+        return Array.from(this.cache.values()).filter(p => p.permission !== 'Normal');
     }
 }
