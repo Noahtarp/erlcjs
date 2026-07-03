@@ -27,9 +27,9 @@ export function banLiveries(liveries: (Livery | string)[], action: (vehicle: Veh
 }
 
 export class VehiclePunishments {
-    public static warnThenKick(delay: number = 10, warning: boolean = true, warningMessage?: string ): (vehicle: Vehicle) => void {
+    public static warnThenKick(delay: number = 10, warning: boolean = true, message?: string ): (vehicle: Vehicle) => void {
         return (vehicle: Vehicle) => {
-            vehicle.owner.message('The vehicle you are using is restricted. Please change it.');
+            vehicle.owner.message(message ?? 'The vehicle you are using is restricted. Please change it.');
             setTimeout(async () => {
                 await vehicle.client.waitFor(ERLCEvents.poll, 5000);
                 if (
@@ -49,7 +49,7 @@ export class VehiclePunishments {
                         if (vehicle.owner.permission === 'Normal') vehicle.owner.kick('Failure to change from a banned vehicle.')
                     }, delay)
                 } else if (vehicle.owner.permission === 'Normal') {
-                    vehicle.owner.kick('Failure to change from a banned livery.')
+                    vehicle.owner.kick('Failure to change from a banned vehicle.')
                 }
             }, delay)
         }
@@ -57,9 +57,9 @@ export class VehiclePunishments {
 }
 
 export class LiveryPunishments {
-    public static warnThenKick(delay: number = 10, warning: boolean = true): (vehicle: Vehicle) => void {
+    public static warnThenKick(delay: number = 10, warning: boolean = true, message?: string): (vehicle: Vehicle) => void {
         return (vehicle: Vehicle) => {
-            vehicle.owner.message('The livery you are using is restricted. Please change it.');
+            vehicle.owner.message(message ?? 'The livery you are using is restricted. Please change it.');
             setTimeout(async () => {
                 await vehicle.client.waitFor(ERLCEvents.poll, 5000);
                 if (
