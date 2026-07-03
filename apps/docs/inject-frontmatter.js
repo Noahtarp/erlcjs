@@ -219,11 +219,24 @@ ${CONTRIBUTORS_MARKER}
 }
 
 if (fs.existsSync(guidesDir)) {
-  const guideFiles = fs.readdirSync(guidesDir).filter(f => f.endsWith('.mdx') || f.endsWith('.md'));
+  function walkDirSync(dir, baseDir = dir) {
+    const results = [];
+    for (const dirent of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, dirent.name);
+      if (dirent.isDirectory()) {
+        results.push(...walkDirSync(full, baseDir));
+      } else if (dirent.isFile() && (full.endsWith('.md') || full.endsWith('.mdx'))) {
+        results.push(path.relative(baseDir, full));
+      }
+    }
+    return results;
+  }
+
+  const guideFiles = walkDirSync(guidesDir);
   let totalInjected = 0;
 
   for (const file of guideFiles) {
-    const repoFilePath = `${GUIDES_REPO_PATH}/${file}`;
+    const repoFilePath = `${GUIDES_REPO_PATH}/${file.replace(/\\/g, '/')}`;
     const contributors = await fetchFileContributors(repoFilePath);
 
     const fullPath = path.join(guidesDir, file);

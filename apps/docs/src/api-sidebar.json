@@ -23,6 +23,10 @@
         "slug": "api/core/clientoptions"
       },
       {
+        "label": "Collection",
+        "slug": "api/core/collection"
+      },
+      {
         "label": "CommandLog",
         "slug": "api/core/commandlog"
       },
@@ -39,6 +43,10 @@
         "slug": "api/core/converttopascalcase"
       },
       {
+        "label": "CustomCommandError",
+        "slug": "api/core/customcommanderror"
+      },
+      {
         "label": "EmergencyCall",
         "slug": "api/core/emergencycall"
       },
@@ -47,8 +55,24 @@
         "slug": "api/core/emergencycallmanager"
       },
       {
+        "label": "ERLCAPIError",
+        "slug": "api/core/erlcapierror"
+      },
+      {
         "label": "ERLCEvents enum",
         "slug": "api/core/erlcevents"
+      },
+      {
+        "label": "InGameCommand",
+        "slug": "api/core/ingamecommand"
+      },
+      {
+        "label": "InvalidCommandError",
+        "slug": "api/core/invalidcommanderror"
+      },
+      {
+        "label": "InvalidGlobalKeyError",
+        "slug": "api/core/invalidglobalkeyerror"
       },
       {
         "label": "InvalidServerKeyError",
@@ -71,12 +95,24 @@
         "slug": "api/core/modcallmanager"
       },
       {
+        "label": "OutOfDateServerError",
+        "slug": "api/core/outofdateservererror"
+      },
+      {
         "label": "Player",
         "slug": "api/core/player"
       },
       {
         "label": "PlayerManager",
         "slug": "api/core/playermanager"
+      },
+      {
+        "label": "PlayerPermission enum",
+        "slug": "api/core/playerpermission"
+      },
+      {
+        "label": "ProhibitedMessageError",
+        "slug": "api/core/prohibitedmessageerror"
       },
       {
         "label": "RawCommandLog",
@@ -103,6 +139,10 @@
         "slug": "api/core/rawplayerdata"
       },
       {
+        "label": "RawPlayerPermission type",
+        "slug": "api/core/rawplayerpermission"
+      },
+      {
         "label": "RawServerData",
         "slug": "api/core/rawserverdata"
       },
@@ -123,12 +163,28 @@
         "slug": "api/core/restmanager"
       },
       {
+        "label": "RestrictedCommandError",
+        "slug": "api/core/restrictedcommanderror"
+      },
+      {
+        "label": "RestrictedResourceError",
+        "slug": "api/core/restrictedresourceerror"
+      },
+      {
         "label": "Server",
         "slug": "api/core/server"
       },
       {
+        "label": "ServerBannedError",
+        "slug": "api/core/serverbannederror"
+      },
+      {
         "label": "ServerManager",
         "slug": "api/core/servermanager"
+      },
+      {
+        "label": "ServerOfflineError",
+        "slug": "api/core/serverofflineerror"
       },
       {
         "label": "Staff",
@@ -139,12 +195,24 @@
         "slug": "api/core/staffmanager"
       },
       {
+        "label": "TimeoutError",
+        "slug": "api/core/timeouterror"
+      },
+      {
+        "label": "UnauthorizedError",
+        "slug": "api/core/unauthorizederror"
+      },
+      {
         "label": "Vehicle",
         "slug": "api/core/vehicle"
       },
       {
         "label": "VehicleManager",
         "slug": "api/core/vehiclemanager"
+      },
+      {
+        "label": "Vehicles enum",
+        "slug": "api/core/vehicles"
       },
       {
         "label": "WebhookServer",

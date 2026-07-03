@@ -248,8 +248,8 @@ export class Client extends EventEmitter<ClientEvents> {
 
     /**
      * Waits for a specific event to be emitted.
-     * @param event The event to wait for.
-     * @param timeoutMs The maximum time to wait in milliseconds.
+     * @param event - The event to wait for.
+     * @param timeoutMs - The maximum time to wait in milliseconds.
      * @returns A promise resolving to the event arguments.
      */
     public async waitFor<K extends keyof ClientEvents>(

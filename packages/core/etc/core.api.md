@@ -36,14 +36,12 @@ export class Client extends EventEmitter<ClientEvents> {
     stopPolling(): void;
     unregisterCommand(commandName: string): void;
     vehicles: VehicleManager;
-    // (undocumented)
     waitFor<K extends keyof ClientEvents>(event: K, timeoutMs?: number): Promise<ClientEvents[K]>;
 }
 
 // @public
 export interface ClientEvents {
     [ERLCEvents.command]: [log: CommandLog];
-    [ERLCEvents.customCommand]: [player: Player | string, command: string, argument: string];
     [ERLCEvents.customCommand]: [player: Player, command: string, args: string[]];
     [ERLCEvents.emergencyCallAdd]: [call: EmergencyCall];
     [ERLCEvents.emergencyCallRemove]: [call: EmergencyCall];
@@ -149,10 +147,6 @@ export class EmergencyCall extends Base {
 export class EmergencyCallManager {
     constructor(client: Client);
     addCall(callData: RawWebhookEmergencyCall): void;
-    cache: Map<number, EmergencyCall>;
-    fetchAll(): Promise<Map<number, EmergencyCall>>;
-    removeCall(callData: RawWebhookEmergencyCall): void;
-    updateCache(rawCalls: RawEmergencyCall[]): Map<number, EmergencyCall>;
     cache: Collection<number, EmergencyCall>;
     fetchAll(): Promise<Collection<number, EmergencyCall>>;
     removeCall(callData: RawWebhookEmergencyCall): void;
@@ -312,10 +306,6 @@ export class PlayerManager {
     cache: Collection<number, Player>;
     fetchAll(): Promise<Collection<number, Player>>;
     getIdFromName(name: string): number | undefined;
-    unadmin(userId: number | string): Promise<void>;
-    unban(userId: number | string): Promise<void>;
-    unmod(userId: number | string): Promise<void>;
-    updateCache(rawPlayers: RawPlayerData[]): Map<number, Player>;
     get onlineStaff(): Player[];
     unadmin(userId: number | string): Promise<void>;
     unban(userId: number | string): Promise<void>;
