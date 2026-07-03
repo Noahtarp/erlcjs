@@ -49,7 +49,7 @@ export class VehiclePunishments {
                         if (vehicle.owner.permission === 'Normal') vehicle.owner.kick('Failure to change from a banned vehicle.')
                     }, delay)
                 } else if (vehicle.owner.permission === 'Normal') {
-                    vehicle.owner.kick('Failure to change from a banned vehicle')
+                    vehicle.owner.kick('Failure to change from a banned livery.')
                 }
             }, delay)
         }
@@ -68,7 +68,7 @@ export class LiveryPunishments {
                 )
                     return;
                 if (warning) {
-                    vehicle.owner.message(`Change the vehicle in ${delay} seconds or you will be kicked.`);
+                    vehicle.owner.message(`Change the livery in ${delay} seconds or you will be kicked.`);
                     setTimeout(async () => {
                         await vehicle.client.waitFor(ERLCEvents.poll, 5000);
                         if (
@@ -76,10 +76,10 @@ export class LiveryPunishments {
                             vehicle.client.vehicles.cache.get(vehicle.plate)?.name !== vehicle.name
                         )
                             return;
-                        if (vehicle.owner.permission === 'Normal') vehicle.owner.kick('Failure to change from a banned vehicle.')
+                        if (vehicle.owner.permission === 'Normal') vehicle.owner.kick('Failure to change from a banned livery.')
                     }, delay)
                 } else if (vehicle.owner.permission === 'Normal') {
-                    vehicle.owner.kick('Failure to change from a banned vehicle')
+                    vehicle.owner.kick('Failure to change from a banned livery.')
                 }
             }, delay)
         }
