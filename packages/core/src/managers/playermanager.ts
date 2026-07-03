@@ -100,6 +100,14 @@ export class PlayerManager {
     }
 
     /**
+     * Unhelpers a player from their userId.
+     * @param userId - The userId to unhelper.
+     */
+    public async unhelper(userId: number | string) {
+        await this.client.commands.execute(`:unhelper ${userId}`);
+    }
+
+    /**
      * Unmods a player from their userId.
      * @param userId - The userId to unmod.
      */

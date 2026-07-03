@@ -167,7 +167,7 @@ export class Player extends Base {
      * @returns A promise that resolves when the unhelper command is sent.
      */
     public async unhelper(): Promise<void> {
-        await this.client.commands.execute(`:helper ${this.username}`);
+        await this.client.commands.execute(`:unhelper ${this.username}`);
     }
 
     /**
