@@ -237,7 +237,7 @@ export class Player extends Base {
      * It does not fetch new data from the server, so it may not be up-to-date.
      */
     public get vehicles() {
-        return this.client.vehicles.cache.filter(v => v.owner.id === this.id);
+        return Array.from(this.client.vehicles.cache.values()).filter(v => v.owner.id === this.id);
     }
 
     /**
@@ -247,7 +247,7 @@ export class Player extends Base {
      * It does not fetch new data from the server, so it may not be up-to-date.
      */
     public get commandLogs() {
-        return this.client.commandLogs.cache.filter(log => log.player.id === this.id);
+        return Array.from(this.client.commandLogs.cache.values()).filter(log => log.player.id === this.id);
     }
 
     /**
@@ -257,7 +257,7 @@ export class Player extends Base {
      * It does not fetch new data from the server, so it may not be up-to-date.
      */
     public get kills() {
-        return this.client.killLogs.cache.filter(log => log.killer.id === this.id);
+        return Array.from(this.client.killLogs.cache.values()).filter(log => log.killer.id === this.id);
     }
 
     /**
@@ -267,7 +267,7 @@ export class Player extends Base {
      * It does not fetch new data from the server, so it may not be up-to-date.
      */
     public get deaths() {
-        return this.client.killLogs.cache.filter(log => log.killed.id === this.id);
+        return Array.from(this.client.killLogs.cache.values()).filter(log => log.killed.id === this.id);
     }
 
     /**
