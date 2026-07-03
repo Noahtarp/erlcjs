@@ -71,6 +71,8 @@ import { Client, ERLCEvents } from '@erlcjs/core';
 
 const client = new Client({
   serverKey: 'YOUR_ERLC_SERVER_API_KEY',
+  globalKey: 'YOUR_PUBLIC_APP_GLOBAL_KEY',
+  globalAppId: 'YOUR_PUBLIC_APP_ID', 
   webhook: {
     enabled: true,
     port: 3000,
@@ -113,6 +115,25 @@ console.log(`Vehicle model: ${vehicle.name}, Owner: ${vehicle.ownerUsername}`);
 Issue custom commands directly:
 ```typescript
 await client.commands.execute(':heal user');
+```
+
+### Custom Commands
+Registering custom commands:
+```typescript
+client.registerCommand({
+    name: 'example',
+    aliases: [ 'ping' ],
+    execute: async ({ player, args }) => {
+        await player.message(`Pong! Args: ${args.join(' ')}`)
+    }
+})
+```
+Now when the user messages `;ping test` in-game, it will respond with `Pong! Args: test`.
+
+### Getting Your Authorization Link
+For public apps where authorizing the IP manually is not ideal:
+```typescript
+console.log(client.authorizationLink);
 ```
 
 ## Documentation
