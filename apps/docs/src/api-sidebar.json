@@ -35,6 +35,10 @@
         "slug": "api/core/commandmanager"
       },
       {
+        "label": "convertToPascalCase() function",
+        "slug": "api/core/converttopascalcase"
+      },
+      {
         "label": "EmergencyCall",
         "slug": "api/core/emergencycall"
       },
@@ -111,6 +115,10 @@
         "slug": "api/core/rawvehicle"
       },
       {
+        "label": "RawWebhookEmergencyCall",
+        "slug": "api/core/rawwebhookemergencycall"
+      },
+      {
         "label": "RestManager",
         "slug": "api/core/restmanager"
       },
@@ -141,6 +149,35 @@
       {
         "label": "WebhookServer",
         "slug": "api/core/webhookserver"
+      }
+    ]
+  },
+  {
+    "label": "PRESETS",
+    "items": [
+      {
+        "label": "Presets Package",
+        "slug": "api/presets"
+      },
+      {
+        "label": "banLiveries() function",
+        "slug": "api/presets/banliveries"
+      },
+      {
+        "label": "banVehicles() function",
+        "slug": "api/presets/banvehicles"
+      },
+      {
+        "label": "LiveryPunishments",
+        "slug": "api/presets/liverypunishments"
+      },
+      {
+        "label": "VehiclePunishments",
+        "slug": "api/presets/vehiclepunishments"
+      },
+      {
+        "label": "welcomePlayer() function",
+        "slug": "api/presets/welcomeplayer"
       }
     ]
   }

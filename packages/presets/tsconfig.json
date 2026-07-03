@@ -2,8 +2,11 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "ignoreDeprecations": "6.0"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "temp", "etc"]
+  "exclude": ["node_modules", "dist", "temp", "etc"],
 }

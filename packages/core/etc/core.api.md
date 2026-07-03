@@ -28,11 +28,14 @@ export class Client extends EventEmitter<ClientEvents> {
     server: ServerManager;
     staff: StaffManager;
     vehicles: VehicleManager;
+    // (undocumented)
+    waitFor<K extends keyof ClientEvents>(event: K, timeoutMs?: number): Promise<ClientEvents[K]>;
 }
 
 // @public
 export interface ClientEvents {
     [ERLCEvents.command]: [log: CommandLog];
+    [ERLCEvents.customCommand]: [player: Player | string, command: string, argument: string];
     [ERLCEvents.emergencyCallAdd]: [call: EmergencyCall];
     [ERLCEvents.emergencyCallRemove]: [call: EmergencyCall];
     [ERLCEvents.emergencyCallUpdate]: [oldCall: EmergencyCall | null, newCall: EmergencyCall];
@@ -45,13 +48,12 @@ export interface ClientEvents {
     [ERLCEvents.poll]: [server: RawServerData];
     [ERLCEvents.serverCreate]: [server: Server];
     [ERLCEvents.serverUpdate]: [oldServer: Server | null, newServer: Server];
-    // (undocumented)
     [ERLCEvents.staffAdd]: [staff: Staff, type: 'Admin' | 'Mod' | 'Helper'];
-    // (undocumented)
     [ERLCEvents.staffRemove]: [staff: Staff, type: 'Admin' | 'Mod' | 'Helper'];
     [ERLCEvents.vehicleAdd]: [vehicle: Vehicle];
     [ERLCEvents.vehicleRemove]: [vehicle: Vehicle];
     [ERLCEvents.vehicleUpdate]: [oldVehicle: Vehicle | null, newVehicle: Vehicle];
+    [ERLCEvents.webhookProbe]: [];
 }
 
 // @public
@@ -94,6 +96,9 @@ export class CommandManager {
 }
 
 // @public
+export function convertToPascalCase(obj: any): any;
+
+// @public
 export class EmergencyCall extends Base {
     constructor(client: Client, data: RawEmergencyCall);
     caller: Player;
@@ -113,14 +118,17 @@ export class EmergencyCall extends Base {
 // @public
 export class EmergencyCallManager {
     constructor(client: Client);
+    addCall(callData: RawWebhookEmergencyCall): void;
     cache: Map<number, EmergencyCall>;
     fetchAll(): Promise<Map<number, EmergencyCall>>;
+    removeCall(callData: RawWebhookEmergencyCall): void;
     updateCache(rawCalls: RawEmergencyCall[]): Map<number, EmergencyCall>;
 }
 
 // @public
 export enum ERLCEvents {
     command = "COMMAND",
+    customCommand = "CUSTOM_COMMAND",
     emergencyCallAdd = "EMERGENCY_CALL_ADD",
     emergencyCallRemove = "EMERGENCY_CALL_REMOVE",
     emergencyCallUpdate = "EMERGENCY_CALL_UPDATE",
@@ -136,7 +144,8 @@ export enum ERLCEvents {
     staffRemove = "STAFF_REMOVE",
     vehicleAdd = "VEHICLE_ADD",
     vehicleRemove = "VEHICLE_REMOVE",
-    vehicleUpdate = "VEHICLE_UPDATE"
+    vehicleUpdate = "VEHICLE_UPDATE",
+    webhookProbe = "WEBHOOK_PROBE"
 }
 
 // @public
@@ -200,6 +209,7 @@ export class Player extends Base {
     jail(): Promise<void>;
     kick(reason?: string): Promise<void>;
     kill(): Promise<void>;
+    load(): Promise<void>;
     location: {
         x: number;
         y: number;
@@ -212,6 +222,8 @@ export class Player extends Base {
     _patch(data: RawPlayerData): this;
     permission: 'Normal' | 'Server Administrator' | 'Server Owner' | 'Server Moderator';
     pm(text: string): Promise<void>;
+    refresh(): Promise<void>;
+    respawn(): Promise<void>;
     team: string;
     toJSON(): RawPlayerData;
     tp(player: Player | number): Promise<void>;
@@ -219,6 +231,7 @@ export class Player extends Base {
     unhelper(): Promise<void>;
     unmod(): Promise<void>;
     username: string;
+    wanted(): Promise<void>;
     wantedLevel: number;
 }
 
@@ -228,6 +241,9 @@ export class PlayerManager {
     cache: Map<number, Player>;
     fetchAll(): Promise<Map<number, Player>>;
     getIdFromName(name: string): number | undefined;
+    unadmin(userId: number | string): Promise<void>;
+    unban(userId: number | string): Promise<void>;
+    unmod(userId: number | string): Promise<void>;
     updateCache(rawPlayers: RawPlayerData[]): Map<number, Player>;
 }
 
@@ -326,6 +342,18 @@ export interface RawVehicle {
 }
 
 // @public
+export interface RawWebhookEmergencyCall {
+    caller: number;
+    callNumber: number;
+    description: string;
+    players: number[];
+    position: number[];
+    positionDescriptor: string;
+    startedAt: number;
+    team: string;
+}
+
+// @public
 export class RestManager {
     constructor(options: ClientOptions);
     request(method: 'GET' | 'POST', endpoint: string, body?: any): Promise<any>;
@@ -398,7 +426,7 @@ export class VehicleManager {
     updateCache(rawVehicles: RawVehicle[]): Map<string, Vehicle>;
 }
 
-// @alpha
+// @public
 export class WebhookServer {
     constructor(client: Client);
     listen(): void;

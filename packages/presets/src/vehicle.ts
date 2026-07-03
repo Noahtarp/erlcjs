@@ -1,20 +1,44 @@
-import { Vehicle, ERLCEvents } from '@erlcjs/core';
+import { Vehicle, ERLCEvents, Vehicles, PlayerPermission } from '@erlcjs/core';
 import { type Livery } from './types/index.js';
 
-export function banVehicles(vehicles: string[], action: (vehicle: Vehicle) => void, allowlist: number[]): (vehicle: Vehicle) => void {
+/**
+ * Bans vehicles for everyone except specific users.
+ * @param vehicles - A list of vehicles to ban.
+ * @param action - Callback function executed when a match is found.
+ * @param allowlist - Users which can use the vehicle.
+ * @example
+ * ```typescript
+ * client.on(ERLCEvents.vehicleAdd, banVehicles([ Vehicles.STRUGATTI_ETTORE_2020 ], VehiclePunishments.warnThenKick()))
+ * ```
+ * @returns Callback function to pass into client event.
+ */
+export function banVehicles(vehicles: (Vehicles | string)[], action: (vehicle: Vehicle) => void, allowlist: (number | PlayerPermission)[] = []): (vehicle: Vehicle) => void {
     return (vehicle: Vehicle) => {
-        if (vehicles.includes(vehicle.name) && !allowlist.includes(vehicle.ownerId)) {
+        if (allowlist.includes(vehicle.ownerId) || allowlist.includes(vehicle.owner.permission as any))
+        if (vehicles.includes(vehicle.name)) {
             action(vehicle)
         }
     }
 }
 
-export function banLiveries(liveries: (Livery | string)[], action: (vehicle: Vehicle) => void, allowlist: number[]) {
+/**
+ * Bans liveries for everyone except specific users.
+ * @param liveries - A list of liveries to ban.
+ * @param action - Callback function executed when a match if found.
+ * @param allowlist - Users which can use the livery.
+ * @example
+ * ```typescript
+ * client.on(ERLCEvents.vehicleAdd, banLiveries([ 'Staff' ], LiveryPunishments.warnThenKick(), [ PlayerPermission.Mod, PlayerPermission.Administrator, PlayerPermission.Owner ]))
+ * ```
+ * @returns Callback function to pass into the client event.
+ */
+export function banLiveries(liveries: (Livery | string)[], action: (vehicle: Vehicle) => void, allowlist: (number | PlayerPermission)[] = []) {
     return (vehicle: Vehicle) => {
         if (!vehicle.texture) return;
+        if (allowlist.includes(vehicle.ownerId) || allowlist.includes(vehicle.owner.permission as any))
         for (const livery of liveries) {
             if (typeof livery === 'string') {
-                if (livery === vehicle.texture && !allowlist.includes(vehicle.ownerId)) {
+                if (livery === vehicle.texture) {
                     action(vehicle);
                 }
             } else if (livery.livery === vehicle.texture) {

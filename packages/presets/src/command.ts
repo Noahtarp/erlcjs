@@ -1,5 +1,21 @@
 import { CommandLog, PlayerPermission } from "@erlcjs/core";
 
+/**
+ * Ban commands for specific users.
+ * @param commands - The commands to ban.
+ * @param action - The callback to run if a match if found.
+ * @param startsWith - Exact match or starts with match.
+ * @param allowlist - Users/Permissions that can run the command
+ * @example
+ * ```typescript
+ * client.on(ERLCEvents.Command, banCommand([':bring all', ':load all'], CommandPunishments.removePermissions(), false, [ PlayerPermission.Owner ] ));
+ * ```
+ * @example
+ * ```typescript
+ * client.on(ERLCEvents.Command, banCommand([':admin', ':mod'], CommandPunishments.removePermissions(), true, [ PlayerPermission.Owner ] ));
+ * ```
+ * @returns - Callback function to pass into client event.
+ */
 export function banCommand(commands: string | string[], action: (log: CommandLog) => void, startsWith: boolean = true, allowlist?: (number | PlayerPermission)[]) {
     if (typeof commands === 'string') commands = [commands];
     return (log: CommandLog) => {
