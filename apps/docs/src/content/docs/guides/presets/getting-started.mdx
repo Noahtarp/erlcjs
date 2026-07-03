@@ -1,0 +1,100 @@
+---
+title: Getting Started
+description: Install and use the `@erlcjs/presets` helpers (player, vehicle, command utilities) with examples for common use-cases.
+---
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+The `@erlcjs/presets` package provides small, reusable helpers for common server-side behaviors: welcoming players, banning vehicles or liveries, and simple command punishments.
+
+<Steps>
+
+1.  ### Install
+
+    Install `@erlcjs/presets` alongside `@erlcjs/core`:
+
+    <Tabs>
+      <TabItem label="npm">
+        ```bash
+        npm install @erlcjs/presets @erlcjs/core
+        ```
+      </TabItem>
+      <TabItem label="pnpm">
+        ```bash
+        pnpm add @erlcjs/presets @erlcjs/core
+        ```
+      </TabItem>
+      <TabItem label="yarn">
+        ```bash
+        yarn add @erlcjs/presets @erlcjs/core
+        ```
+      </TabItem>
+    </Tabs>
+
+2.  ### Quick imports
+
+    Import the helpers you need from the package:
+
+    ```ts
+    import { welcomePlayer } from '@erlcjs/presets';
+    import { banVehicles, VehiclePunishments } from '@erlcjs/presets';
+    import { banCommand, CommandPunishments } from '@erlcjs/presets';
+    import { Client, ERLCEvents } from '@erlcjs/core';
+
+    const client = new Client({ serverKey: 'YOUR_SERVER_KEY' });
+    ```
+
+3.  ### Welcome new players!
+
+    Send a welcome message when a player joins:
+
+    ```ts
+    client.on(ERLCEvents.playerJoin, welcomePlayer());
+
+    // Or provide a custom message
+    client.on(ERLCEvents.playerJoin, welcomePlayer('Welcome to the server! Please read the rules.'));
+    ```
+
+4.  ### Ban specific vehicles
+
+    Prevent players from using certain vehicles and warn/kick offenders using `VehiclePunishments`:
+
+    ```ts
+    client.on(
+        ERLCEvents.vehicleAdd,
+        banVehicles([ 'Adder', 'Oppressor' ], VehiclePunishments.warnThenKick(15))
+    );
+    ```
+
+5.  ### Ban specific liveries
+
+    Ban specific liveries across vehicles:
+
+    ```ts
+    client.on(
+        ERLCEvents.vehicleAdd,
+        banLiveries([ 'Staff' ], VehiclePunishments.warnThenKick(10), [ /* allowed IDs or permissions */ ])
+    );
+    ```
+
+6.  ### Ban specific commands
+
+    Block or punish certain chat commands using `banCommand` and `CommandPunishments`:
+
+    ```ts
+    client.on(
+        ERLCEvents.Command,
+        banCommand([':admin', ':mod'], CommandPunishments.removePermissions(), true, [/* allowlist */])
+    );
+
+    // Kick offenders for matching commands
+    client.on(
+        ERLCEvents.Command,
+        banCommand([':bring all', ':load all'], CommandPunishments.kick(), false)
+    );
+    ```
+
+</Steps>
+
+## Notes
+
+- All helpers are plain functions that return callbacks suitable for passing directly into `client.on(...)` handlers.
