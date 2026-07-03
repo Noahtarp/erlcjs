@@ -30,6 +30,12 @@ export default defineConfig({
 						{ label: 'Server & Command Management', slug: 'guides/server-commands' },
 						{ label: 'Handling Events', slug: 'guides/events' },
                         { label: 'Accessing the Cache', slug: 'guides/cache' },
+                        { 
+                            label: 'Using Presets', 
+                            items: [
+                                { label: 'Getting Started', slug: 'guides/presets/getting-started' },
+                            ]
+                        },
 					],
 				},
 				{
