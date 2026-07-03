@@ -1,11 +1,11 @@
-import { Vehicle, Vehicles } from "@erlcjs/core"
+import { Vehicles } from "@erlcjs/core"
 
-interface Punishments {
+export interface Punishments {
     kick: "kick",
     load: "load"
 }
 
-interface Livery {
+export interface Livery {
     livery: string,
     vehicle: Vehicles,
 }

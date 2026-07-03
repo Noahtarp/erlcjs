@@ -32,6 +32,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@erlcjs/core": "1.3.0"
+    "@erlcjs/core": "1.3.1"
   }
 }

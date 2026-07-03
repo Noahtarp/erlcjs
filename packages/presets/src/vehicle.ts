@@ -1,4 +1,5 @@
 import { Vehicle, ERLCEvents } from '@erlcjs/core';
+import { Livery } from './types/index.js';
 
 export function banVehicles(vehicles: string[], action: (vehicle: Vehicle) => void, allowlist: number[]): (vehicle: Vehicle) => void {
     return (vehicle: Vehicle) => {
@@ -8,16 +9,25 @@ export function banVehicles(vehicles: string[], action: (vehicle: Vehicle) => vo
     }
 }
 
-export function banLiveries(liveries: string[], action: (vehicle: Vehicle) => void, allowlist: number[]) {
+export function banLiveries(liveries: (Livery | string)[], action: (vehicle: Vehicle) => void, allowlist: number[]) {
     return (vehicle: Vehicle) => {
-        if (liveries.includes(vehicle.texture!) && !allowlist.includes(vehicle.ownerId)) {
-            action(vehicle)
+        if (!vehicle.texture) return;
+        for (const livery of liveries) {
+            if (typeof livery === 'string') {
+                if (livery === vehicle.texture && !allowlist.includes(vehicle.ownerId)) {
+                    action(vehicle);
+                }
+            } else if (livery.livery === vehicle.texture) {
+                if (livery.vehicle === vehicle.texture || !livery.vehicle) {
+                    action(vehicle);
+                }
+            }
         }
     }
 }
 
 export class VehiclePunishments {
-    public static warnThenKick(delay: number = 10, warning: boolean = true, warningMessage?: string, ): (vehicle: Vehicle) => void {
+    public static warnThenKick(delay: number = 10, warning: boolean = true, warningMessage?: string ): (vehicle: Vehicle) => void {
         return (vehicle: Vehicle) => {
             vehicle.owner.message('The vehicle you are using is restricted. Please change it.');
             setTimeout(async () => {
