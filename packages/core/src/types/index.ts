@@ -42,6 +42,10 @@ export interface ClientOptions {
      * Whether to poll the ER:LC API endpoints periodically.
      */
     polling?: boolean;
+    /**
+     * The rate to poll the ER:LC API endpoints. Minimum value of 500.
+     */
+    pollingRateMs?: number;
 }
 
 /**

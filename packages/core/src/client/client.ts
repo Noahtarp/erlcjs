@@ -19,6 +19,7 @@ import { EmergencyCall } from '../structures/emergencycall.js';
 import type { KillLog } from '../structures/killlog.js';
 import type { Staff } from '../structures/staff.js';
 import { StaffManager } from '../managers/staffmanager.js';
+import { clearInterval } from 'node:timers';
 
 /**
  * Event names emitted by the ERLCApi Client.
@@ -185,7 +186,7 @@ export class Client extends EventEmitter<ClientEvents> {
         }
 
         if (options.polling) {
-            this.startPolling();
+            this.startPolling(options.pollingRateMs);
         }
 
         this.emit(ERLCEvents.ready);
@@ -194,11 +195,11 @@ export class Client extends EventEmitter<ClientEvents> {
     /**
      * Starts the periodic api-polling loop if enabled.
      */
-    private async startPolling() {
+    private async startPolling(pollingRateMs?: number) {
         await this.poll();
         this.pollingInterval = setInterval(async () => {
             await this.poll();
-        }, 5000);
+        }, this.sanitizePollRate(pollingRateMs));
     }
 
     private async poll() {
@@ -215,6 +216,22 @@ export class Client extends EventEmitter<ClientEvents> {
         } catch (err) {
             this.emit('error', err);
         }
+    }
+
+    /**
+     * Updates the poll rate and restarts the polling.
+     * @param pollRateMs - The new poll rate, minimum 500.
+     */
+    public setPollRateMs(pollRateMs: number) {
+        if (this.pollingInterval) {
+            clearInterval(this.pollingInterval);
+        }
+        this.startPolling(pollRateMs);
+    }
+
+    private sanitizePollRate(rate?: number) {
+        if (typeof rate !== 'number' || rate <= 0) return 5000;
+        return Math.max(500, rate);
     }
 
     /**

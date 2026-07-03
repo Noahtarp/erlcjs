@@ -53,7 +53,7 @@ export class RestManager {
                             'Server-Key': this.options.serverKey,
                             'Content-Type': 'application/json',
                             ...(this.options.globalKey && {
-                                Authorization: `Bearer ${this.options.globalKey}`,
+                                Authorization: `${this.options.globalKey}`,
                             }),
                         },
                         body: body ? JSON.stringify(body) : undefined,
