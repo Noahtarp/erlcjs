@@ -20,6 +20,7 @@ import type { KillLog } from '../structures/killlog.js';
 import type { Staff } from '../structures/staff.js';
 import { StaffManager } from '../managers/staffmanager.js';
 import { clearInterval } from 'node:timers';
+import { CustomCommandError, InvalidGlobalKeyError, TimeoutError } from '../errors/index.js';
 
 /**
  * Event names emitted by the ERLCApi Client.
@@ -265,7 +266,7 @@ export class Client extends EventEmitter<ClientEvents> {
             if (timeoutMs > 0) {
                 timeout = setTimeout(() => {
                     this.off(event, listener as any);
-                    reject(new Error(`Timeout waiting for event: "${event}" after ${timeoutMs}ms`));
+                    reject(new TimeoutError(`Timeout waiting for event: "${event}" after ${timeoutMs}ms`));
                 }, timeoutMs);
             }
         });
@@ -292,7 +293,7 @@ export class Client extends EventEmitter<ClientEvents> {
         if (command.name.startsWith(';')) command.name = command.name.slice(1);
         command.name = command.name.toLowerCase();
         if (this.inGameCommands.has(command.name)) {
-            throw new Error(`Command with name "${command.name}" is already registered.`);
+            throw new CustomCommandError(`Command with name "${command.name}" is already registered.`);
         }
         if (command.aliases?.length && command.aliases.length > 0) command.aliases.forEach((alias) => {
             const aliasCmd = { ...command };
@@ -301,7 +302,7 @@ export class Client extends EventEmitter<ClientEvents> {
             this.registerCommand(aliasCmd);
         });
         if (!command.name || !command.execute) {
-            throw new Error('Invalid command: must have a name and an execute function.');
+            throw new CustomCommandError('Invalid command: must have a name and an execute function.');
         }
         if (this.inGameCommands.size === 0) this.handleCustomCommands();
         this.inGameCommands.set(command.name, command);
@@ -319,7 +320,7 @@ export class Client extends EventEmitter<ClientEvents> {
      * Creates an authorization link for this server to allow post requests.
      */
     public get authorizationLink() {
-        if (!this.globalAppId) throw new Error('No Global App ID.')
+        if (!this.globalAppId) throw new InvalidGlobalKeyError('No Global App ID.')
         return `https://api.erlc.gg/server-owners/server/${this.serverId}/authorize/${this.globalAppId}`
     }
 

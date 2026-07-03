@@ -1,5 +1,5 @@
 import { type ClientOptions } from '../types/index.js';
-import { InvalidServerKeyError } from '../errors/index.js';
+import { ERLCAPIError, InvalidServerKeyError } from '../errors/index.js';
 
 interface BucketInfo {
     limit: number;
@@ -87,13 +87,11 @@ export class RestManager {
                             await new Promise((res) => setTimeout(res, delay));
                             return executeTask();
                         }
-                        return reject(new Error(`Server error: ${response.status} ${response.statusText}`));
+                        return reject(new ERLCAPIError(`${response.status} ${response.statusText}`));
                     }
 
                     if (!response.ok) {
-                        throw new Error(
-                            `[ERLC API Error] ${response.status}: ${response.statusText}`,
-                        );
+                        throw new ERLCAPIError(`${response.status}: ${response.statusText}`);
                     }
 
                     const data = await response.json();
