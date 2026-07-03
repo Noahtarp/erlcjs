@@ -1,5 +1,5 @@
 import { Vehicle, ERLCEvents } from '@erlcjs/core';
-import { Livery } from './types/index.js';
+import { type Livery } from './types/index.js';
 
 export function banVehicles(vehicles: string[], action: (vehicle: Vehicle) => void, allowlist: number[]): (vehicle: Vehicle) => void {
     return (vehicle: Vehicle) => {
