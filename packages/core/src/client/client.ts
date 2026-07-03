@@ -186,7 +186,7 @@ export class Client extends EventEmitter<ClientEvents> {
         }
 
         if (options.polling) {
-            this.startPolling(options.pollingRateMs);
+            this.beginPolling(options.pollingRateMs);
         }
 
         this.emit(ERLCEvents.ready);
@@ -195,7 +195,7 @@ export class Client extends EventEmitter<ClientEvents> {
     /**
      * Starts the periodic api-polling loop if enabled.
      */
-    private async startPolling(pollingRateMs?: number) {
+    private async beginPolling(pollingRateMs?: number) {
         await this.poll();
         this.pollingInterval = setInterval(async () => {
             await this.poll();
@@ -219,14 +219,22 @@ export class Client extends EventEmitter<ClientEvents> {
     }
 
     /**
-     * Updates the poll rate and restarts the polling.
+     * Starts polling the ER:LC API with a set poll rate, restarts the poll if it is already exists.
      * @param pollRateMs - The new poll rate, minimum 500.
      */
-    public setPollRateMs(pollRateMs: number) {
+    public startPolling(pollRateMs: number) {
+        this.stopPolling();
+        this.beginPolling(pollRateMs);
+    }
+
+    /**
+     * Stops polling the ER:LC API.
+     */
+    public stopPolling() {
         if (this.pollingInterval) {
             clearInterval(this.pollingInterval);
+            this.pollingInterval = undefined;
         }
-        this.startPolling(pollRateMs);
     }
 
     private sanitizePollRate(rate?: number) {
