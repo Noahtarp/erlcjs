@@ -41,3 +41,4 @@ export * from './util/collection.js';
 
 // Enums
 export * from './enums/vehicles.js';
+export * from './enums/player.js';

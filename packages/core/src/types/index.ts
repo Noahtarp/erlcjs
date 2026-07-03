@@ -1,3 +1,4 @@
+import type { PlayerPermission } from "../enums/player";
 import type { Player } from "../structures/player";
 
 /**
@@ -48,6 +49,8 @@ export interface ClientOptions {
     pollingRateMs?: number;
 }
 
+export type RawPlayerPermission = 'Normal' | 'Server Administrator' | 'Server Owner' | 'Server Moderator';
+
 /**
  * Raw data structure representing a player from the ERLC API.
  * @public
@@ -60,7 +63,7 @@ export interface RawPlayerData {
     /**
      * The permission level of the player in the server.
      */
-    Permission: 'Normal' | 'Server Administrator' | 'Server Owner' | 'Server Moderator';
+    Permission: RawPlayerPermission;
     /**
      * The team the player is currently on.
      */
@@ -379,8 +382,30 @@ export interface RawServerData {
     Vehicles?: RawVehicle[];
 }
 
+/**
+ * In-Game command structure.
+ * @public
+ */
 export interface InGameCommand {
+    /**
+     * The name of the command.
+     */
     name: string;
+    /**
+     * The description of the command.
+     */
     description?: string;
+    /**
+     * The permissions the player needs to use the command.
+     */
+    permission?: (RawPlayerPermission | PlayerPermission)[];
+    /**
+     * Aliases of the command.
+     */
+    aliases?: string[];
+    /**
+     * The execution of the command.
+     * @param context - An object of the player and args given to the execute function.
+     */
     execute: (context: { player: Player; args: string[] }) => void;
 }
