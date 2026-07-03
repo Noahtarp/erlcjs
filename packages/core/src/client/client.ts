@@ -187,7 +187,9 @@ export class Client extends EventEmitter<ClientEvents> {
         }
 
         if (options.polling) {
-            this.beginPolling(options.pollingRateMs);
+            (async () => {
+                await this.beginPolling(options.pollingRateMs);
+            })();
         }
 
         this.emit(ERLCEvents.ready);
