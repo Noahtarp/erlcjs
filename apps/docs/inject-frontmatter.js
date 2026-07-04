@@ -13,40 +13,111 @@ if (!fs.existsSync(apiDir)) {
 
 const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-const rawApiFiles = fs.readdirSync(apiDir).filter(f => f.endsWith('.md') && f !== 'index.md');
+function findApiFiles(dir, baseDir = dir) {
+  const files = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...findApiFiles(fullPath, baseDir));
+    } else if (entry.isFile() && entry.name.endsWith('.md') && entry.name !== 'index.md') {
+      files.push(path.relative(baseDir, fullPath).replace(/\\/g, '/'));
+    }
+  }
+  return files;
+}
+
+const rawApiFiles = findApiFiles(apiDir);
 const fileToUrlMap = new Map();
 
-for (const file of rawApiFiles) {
-  const fullPath = path.join(apiDir, file);
+for (const relativeFile of rawApiFiles) {
+  const fullPath = path.join(apiDir, relativeFile.replace(/\//g, path.sep));
   const content = fs.readFileSync(fullPath, 'utf8');
-  
-  const baseName = file.replace('.md', ''); 
+
+  const baseName = relativeFile.replace(/\.md$/, '').replace(/\//g, '.');
   const parts = baseName.split('.');
-  
+
   const titleMatch = content.match(/^#+\s+(.+)$/m);
   let title = titleMatch ? titleMatch[1].replace(/`/g, '').trim() : parts[parts.length - 1];
-  
+
   let cleanTitle = title.replace(/\s+(class|interface)$/i, '');
 
   const pathParts = parts.map(part => {
-    if (part === '_constructor_') return 'constructor'
-    return part.toLowerCase()
-});
+    if (part === '_constructor_') return 'constructor';
+    return part.toLowerCase();
+  });
 
   const relativeAstroUrl = `/api/${pathParts.join('/')}/`;
-  
-  fileToUrlMap.set(baseName, { 
-    oldFullPath: fullPath, 
-    parts, 
-    title, 
-    cleanTitle, 
-    pathParts, 
-    relativeAstroUrl 
+
+  fileToUrlMap.set(baseName, {
+    oldFullPath: fullPath,
+    parts,
+    title,
+    cleanTitle,
+    pathParts,
+    relativeAstroUrl
   });
 }
 
 const packagesMap = new Map();
 const filesToWrite = [];
+
+function createPackageEntry(rawPackageName) {
+  return {
+    label: rawPackageName.toUpperCase(),
+    sections: {
+      package: [],
+      classes: [],
+      functions: [],
+      enums: [],
+      errors: [],
+      interfaces: [],
+      types: [],
+      misc: []
+    }
+  };
+}
+
+function getGroupFromMeta(meta) {
+  const title = meta.title.toLowerCase();
+  const filename = meta.parts[1]?.toLowerCase() ?? '';
+
+  if (/\benum\b/.test(title)) return 'enums';
+  if (/\bfunction\b/.test(title)) return 'functions';
+  if (/\binterface\b/.test(title)) return 'interfaces';
+  if (/\btype\b/.test(title)) return 'types';
+  if (/error\b/.test(filename) || /\berror\b/.test(title)) return 'errors';
+  if (/class\b/.test(title)) return 'classes';
+
+  return 'misc';
+}
+
+function buildPackageSidebar(packageEntry, rawPackageName) {
+  const items = [
+    ...packageEntry.sections.package
+  ];
+
+  const groups = [
+    { label: 'Classes', key: 'classes' },
+    { label: 'Functions', key: 'functions' },
+    { label: 'Enums', key: 'enums' },
+    { label: 'Errors', key: 'errors' },
+    { label: 'Interfaces', key: 'interfaces' },
+    { label: 'Types', key: 'types' },
+    { label: 'Misc', key: 'misc' }
+  ];
+
+  for (const group of groups) {
+    const groupItems = packageEntry.sections[group.key];
+    if (groupItems.length > 0) {
+      items.push({
+        label: group.label,
+        items: groupItems
+      });
+    }
+  }
+
+  return items;
+}
 
 for (const [baseName, meta] of fileToUrlMap.entries()) {
   let content = fs.readFileSync(meta.oldFullPath, 'utf8');
@@ -101,24 +172,27 @@ for (const [baseName, meta] of fileToUrlMap.entries()) {
     const packageKey = rawPackageName.toLowerCase();
 
     if (!packagesMap.has(packageKey)) {
-      packagesMap.set(packageKey, {
-        label: rawPackageName.toUpperCase(),
-        items: []
-      });
+      packagesMap.set(packageKey, createPackageEntry(rawPackageName));
     }
 
+    const packageEntry = packagesMap.get(packageKey);
     const astroSlug = `api/${meta.pathParts.join('/')}`;
+    const item = {
+      label: meta.cleanTitle,
+      slug: astroSlug
+    };
 
     if (isPackageRoot) {
-      packagesMap.get(packageKey).items.unshift({
+      packageEntry.sections.package.unshift({
         label: `${capitalize(rawPackageName)} Package`,
         slug: astroSlug
       });
     } else if (isClassOrInterface) {
-      packagesMap.get(packageKey).items.push({
-        label: meta.cleanTitle, 
-        slug: astroSlug
-      });
+      const group = getGroupFromMeta(meta);
+      packageEntry.sections[group].push(item);
+    } else {
+      const group = getGroupFromMeta(meta);
+      packageEntry.sections[group].push(item);
     }
   }
 }
@@ -156,9 +230,17 @@ if (fs.existsSync(indexFile)) {
   }
 }
 
-const structuredSidebar = Array.from(packagesMap.values());
+const structuredSidebar = [];
+for (const [packageKey, packageEntry] of packagesMap.entries()) {
+  structuredSidebar.push({
+    label: packageEntry.label,
+    items: buildPackageSidebar(packageEntry, packageKey)
+  });
+}
 fs.writeFileSync(sidebarOutputFile, JSON.stringify(structuredSidebar, null, 2), 'utf8');
-console.log('✅ Base paths fully applied to home links!');
+const packageLabels = structuredSidebar.map(pkg => pkg.label).join(', ');
+console.log(`✅ Wrote ${fileToUrlMap.size} API docs into ${sidebarOutputFile}`);
+console.log(`✅ Sidebar packages: ${packageLabels}`);
 
 const guidesDir = path.resolve(__dirname, 'src/content/docs/guides');
 const GITHUB_REPO = 'erlc-js/erlcjs';
@@ -201,7 +283,7 @@ async function fetchFileContributors(filePath) {
 
 function buildContributorsHtml(contributors) {
   const avatars = contributors.map(c => {
-    return `<a href="${c.html_url}" target="_blank" rel="noopener noreferrer" class="contributor" title="${c.login} — ${c.commits} commit${c.commits !== 1 ? 's' : ''}"><img src="${c.avatar_url}&s=64" alt="${c.login}" width="40" height="40" loading="lazy" /><span class="contributor-name">${c.login}</span></a>`;
+    return `<a href="${c.html_url}" target="_blank" rel="noopener noreferrer" class="contributor"><img src="${c.avatar_url}&s=64" alt="${c.login}" width="40" height="40" loading="lazy" /><span class="contributor-name">${c.login}</span></a>`;
   }).join('\n      ');
 
   return `
