@@ -34,7 +34,7 @@ export default defineConfig({
                             label: 'Using Presets', 
                             items: [
                                 { label: 'Getting Started', slug: 'guides/presets/getting-started' },
-                            ]
+                            ],
                         },
 					],
 				},

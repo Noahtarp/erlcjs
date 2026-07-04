@@ -1,6 +1,8 @@
 ---
 title: Instantiating the Client
 description: Understand client options, connection strategies, polling, and webhook gateway configuration.
+sidebar:
+    order: 1
 ---
 
 The `Client` class is the central coordinator of erlc.js. It coordinates HTTP REST calls, handles token/key management, and manages the cache and event emitters.
@@ -37,7 +39,7 @@ const client = new Client({
 
 erlc.js offers two ways to receive real-time updates from your ER:LC private server: **Polling Mode** and **Webhook Gateway Mode**.
 
-:::info
+:::note
 It is recommended to use polling and webhooks
 :::
 
