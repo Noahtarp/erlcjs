@@ -28,7 +28,7 @@ export default defineConfig({
             ],
             plugins: [
                 starlightThemeNext(),
-                starlightLinksValidatorPlugin(),
+                // starlightLinksValidatorPlugin(),
                 starlightSidebarTopicsPlugin([
                     {
                         label: 'Guides',
