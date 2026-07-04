@@ -113,12 +113,77 @@ a:hover {
     color: var(--sl-color-text-accent);
 }
 
-:root[data-theme='light'] starlight-toc nav ul li [aria-current='true'] span {
-    color: var(--sl-color-text-accent);
+starlight-toc nav ul {
+  list-style: none;
+  padding-left: 0;
+  position: relative;
 }
 
-:root[data-theme='light'] mobile-starlight-toc .display-current {
-    background: none;
+starlight-toc nav ul ul {
+  padding-left: 0.75rem; 
+}
+
+starlight-toc nav ul li a {
+  position: relative;
+  display: block;
+  padding: 0.35rem 0 0.35rem 1rem;
+  font-size: 0.875rem;
+  color: #71717a;
+  text-decoration: none !important;
+  transition: color 0.15s ease;
+}
+
+starlight-toc > nav > ul::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--sl-color-hairline);
+  z-index: 1;
+}
+
+starlight-toc nav ul li a:hover {
+  color: var(--sl-color-text) !important;
+}
+
+starlight-toc nav ul li a[aria-current='true'] {
+  color: var(--sl-color-accent-high) !important;
+  font-weight: 500;
+}
+
+starlight-toc nav ul li a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: transparent;
+  transform: scaleY(0);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  z-index: 2;
+}
+
+starlight-toc nav ul li a[aria-current='true']::before {
+  background-color: var(--sl-color-accent-high);
+  transform: scaleY(1);
+}
+
+starlight-toc nav ul li a[aria-current='true'] span {
+  display: inline-block;
+  transform: translateX(4px);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Theme Color Corrections --- */
+[data-theme='light'] starlight-toc nav ul li a[aria-current='true'] {
+  color: var(--sl-color-text-accent) !important;
+}
+
+[data-theme='light'] starlight-toc nav ul li a[aria-current='true']::before {
+  background-color: var(--sl-color-text-accent);
 }
 
 :root[data-theme='light'] sl-sidebar-state-persist span {
