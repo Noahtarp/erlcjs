@@ -55,6 +55,7 @@ export interface ClientOptions {
     maxCacheSize?: {
         killLog?: number;
         commandLog?: number;
+        modCalls?: number;
     }
 }
 
