@@ -16,8 +16,11 @@ export default defineConfig({
 		starlight({
 			title: 'erlc.js',
             customCss: [ './src/styles/custom.css' ],
+            editLink: {
+                baseUrl: 'https://github.com/erlc-js/erlcjs/edit/main/apps/docs',
+            },
 			social: [
-                { icon: 'github', label: 'GitHub', href: 'https://github.com/noinkin/erlcapi' },
+                { icon: 'github', label: 'GitHub', href: 'https://github.com/erlc-js/erlcjs' },
                 { icon: 'discord', label: 'Discord', href: 'https://discord.gg/yMK7Szrn8Q' },
             ],
 			sidebar: [
