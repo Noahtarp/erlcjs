@@ -139,10 +139,6 @@ a:hover {
     background-color: var(--sl-color-white);
 }
 
-:root[data-theme='light'] aside .starlight-aside [aria-label='Note'] {
-    background-color: var(hsl(224, 100%, 86%)) !important;
-}
-
 :root[data-theme='light'] .sl-markdown-content a,
 :root[data-theme='light'] .sl-markdown-content table p {
     color: var(--sl-color-black);
