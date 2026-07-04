@@ -104,7 +104,7 @@ a:hover {
     color: var(--sl-color-text-accent);
 }
 
-:root[data-theme='light'] .starlight-sidebar-topics a:not(.starlight-sidebar-topics-current) div:hover {
+:root[data-theme='light'] .starlight-sidebar-topics a:not(.starlight-sidebar-topics-current):hover {
     color: var(--sl-color-text-accent);
 }
 
