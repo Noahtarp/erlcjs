@@ -60,7 +60,30 @@ export default defineConfig({
                         ]
                     },
                 ])
-            ]
+            ],
+            expressiveCode: {
+                themes: ['github-dark', 'github-light'],
+                styleOverrides: {
+                    codeBackground: ({ theme }) => 
+                        theme.type === 'dark' ? '#121212' : '#F4F4F5',
+                    
+                    frames: {
+                        terminalBackground: ({ theme }) => 
+                            theme.type === 'dark' ? '#121212' : '#F4F4F5',
+                        terminalTitlebarBackground: ({ theme }) => 
+                            theme.type === 'dark' ? '#121212' : '#F4F4F5',
+                        terminalTitlebarBorderBottomColor: ({ theme }) => 
+                            theme.type === 'dark' ? '#21262d' : '#d0d7de',
+                        
+                        editorTabBarBackground: ({ theme }) => 
+                            theme.type === 'dark' ? '#090d12' : '#f0f3f6',
+                        editorActiveTabBackground: ({ theme }) => 
+                            theme.type === 'dark' ? '#121212' : '#F4F4F5',
+                        editorTabBarBorderBottomColor: ({ theme }) => 
+                            theme.type === 'dark' ? '#21262d' : '#d0d7de',
+                    }
+                },
+            },
 		}),
 	],
 });
