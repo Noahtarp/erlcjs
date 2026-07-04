@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import starlightSidebarTopicsPlugin from 'starlight-sidebar-topics';
 import starlightLinksValidatorPlugin from 'starlight-links-validator';
+import starlightThemeNext from 'starlight-theme-next';
 
 const sidebarFilePath = path.resolve('./src/api-sidebar.json');
 const apiSidebarItems = fs.existsSync(sidebarFilePath)
@@ -26,6 +27,7 @@ export default defineConfig({
                 { icon: 'discord', label: 'Discord', href: 'https://discord.gg/yMK7Szrn8Q' },
             ],
             plugins: [
+                starlightThemeNext(),
                 starlightLinksValidatorPlugin(),
                 starlightSidebarTopicsPlugin([
                     {

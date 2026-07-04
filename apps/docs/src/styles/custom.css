@@ -95,6 +95,31 @@ a:hover {
     color: var(--sl-color-blue);
 }
 
+:root[data-theme='light'] .starlight-sidebar-topics a:not(.starlight-sidebar-topics-current),
+:root[data-theme='light'] .starlight-sidebar-topics-icon {
+    color: var(--sl-color-black);
+}
+
+:root[data-theme='light'] .starlight-sidebar-topics-current {
+    color: var(--sl-color-text-accent);
+}
+
+:root[data-theme='light'] .starlight-sidebar-topics a:not(.starlight-sidebar-topics-current) div:hover {
+    color: var(--sl-color-text-accent);
+}
+
+:root[data-theme='light'] starlight-toc nav ul li [aria-current='true'] span {
+    color: var(--sl-color-text-accent);
+}
+
+:root[data-theme='light'] sl-sidebar-state-persist ul li [aria-current='page'] {
+    color: var(--sl-color-text-accent) !important;
+}
+
+:root[data-theme='light'] .sidebar-content {
+    background-color: var(--sl-color-white);
+}
+
 /* Subtle, polished card updates */
 .card {
   border: 1px solid var(--sl-color-hairline) !important;
