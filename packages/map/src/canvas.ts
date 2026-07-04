@@ -90,6 +90,12 @@ function createEmergencyCallSVG(size: number, color: string): string {
     const tailH = Math.round(size * 0.28);
     const totalHeight = d + tailH;
     const dark = shadeColor(color, -22);
+    const R = r - 1.2;
+    const barW = R * 0.31;
+    const barTop = r - R * 0.615;
+    const barHeight = R * 0.846;
+    const dotCy = r + R * 0.538;
+    const dotR = R * 0.173;
 
     return `<svg width="${d}" height="${totalHeight}" xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -99,8 +105,9 @@ function createEmergencyCallSVG(size: number, color: string): string {
   </defs>
   <g filter="url(#emShadow)">
     <polygon points="${r},${totalHeight} ${d - r * 0.28},${r * 1.55} ${r * 0.28},${r * 1.55}" fill="${dark}" />
-    <circle cx="${r}" cy="${r}" r="${r - 1.2}" fill="${color}" stroke="#ffffff" stroke-width="2" />
-    <text x="${r}" y="${Math.round(r * 1.38)}" text-anchor="middle" font-size="${Math.round(r * 1.55)}" font-weight="700" fill="#ffffff" font-family="Arial, sans-serif">!</text>
+    <circle cx="${r}" cy="${r}" r="${R}" fill="${color}" stroke="#ffffff" stroke-width="2" />
+    <rect x="${r - barW / 2}" y="${barTop}" width="${barW}" height="${barHeight}" rx="${barW / 2}" fill="#ffffff" />
+    <circle cx="${r}" cy="${dotCy}" r="${dotR}" fill="#ffffff" />
   </g>
 </svg>`;
 }
