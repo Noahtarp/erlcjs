@@ -63,7 +63,8 @@ function createModCallSVG(size: number, color: string): string {
   </defs>
   <g filter="url(#modShadow)">
     <circle cx="28" cy="28" r="26" fill="${color}" stroke="#ffffff" stroke-width="2.5" />
-    <path fill="#ffffff" d="M28 44.5c-1.243 0-1.922-.727-1.97-1.97L25.68 17.97c-.047-1.29.937-2.203 2.273-2.203c1.313 0 2.32.937 2.274 2.226l-.329 21.555c-.047 1.265-.75 1.969-1.921 1.969m0 4.5c-1.36 0-2.626-1.078-2.626-2.532s1.243-2.53 2.626-2.53c1.359 0 2.624 1.054 2.624 2.53c0 1.477-1.289 2.532-2.624 2.532" />
+    <rect x="24" y="12" width="8" height="22" rx="4" fill="#ffffff" />
+    <circle cx="28" cy="42" r="4.5" fill="#ffffff" />
   </g>
 </svg>`
 }
@@ -99,7 +100,7 @@ function createEmergencyCallSVG(size: number, color: string): string {
   <g filter="url(#emShadow)">
     <polygon points="${r},${totalHeight} ${d - r * 0.28},${r * 1.55} ${r * 0.28},${r * 1.55}" fill="${dark}" />
     <circle cx="${r}" cy="${r}" r="${r - 1.2}" fill="${color}" stroke="#ffffff" stroke-width="2" />
-    <text x="${r}" y="${Math.round(r * 1.32)}" text-anchor="middle" font-size="${Math.round(r * 1.15)}" font-weight="700" fill="#ffffff" font-family="Arial, sans-serif">!</text>
+    <text x="${r}" y="${Math.round(r * 1.38)}" text-anchor="middle" font-size="${Math.round(r * 1.55)}" font-weight="700" fill="#ffffff" font-family="Arial, sans-serif">!</text>
   </g>
 </svg>`;
 }
