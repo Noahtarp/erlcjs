@@ -32,6 +32,11 @@
   --sl-color-text: #18181b; 
   --sl-color-text-accent: #5380d4;
   --sl-color-text-invert: #ffffff;
+
+  --sl-color-blue-low: #cedcff;
+  .starlight-aside--note {
+    --sl-color-asides-text-accent: #5068a3 !important;
+  }
 }
 
 .site-title {
@@ -51,7 +56,7 @@ a:hover {
   color: var(--sl-color-blue);
 }
 
-[data-theme='light'] :is(label:hover, .top-level span, .pagination-links span) {
+[data-theme='light'] :is(label:hover, .pagination-links span) {
   color: var(--sl-color-black);
 }
 
@@ -112,12 +117,39 @@ a:hover {
     color: var(--sl-color-text-accent);
 }
 
-:root[data-theme='light'] sl-sidebar-state-persist ul li [aria-current='page'] {
+:root[data-theme='light'] mobile-starlight-toc .display-current {
+    background: none;
+}
+
+:root[data-theme='light'] sl-sidebar-state-persist span {
+    color: var(--sl-color-black);
+}
+
+:root[data-theme='light'] sl-sidebar-state-persist a[aria-current='page'] span {
     color: var(--sl-color-text-accent) !important;
 }
 
+:root[data-theme='light'] sl-sidebar-state-persist a:hover span {
+    color: var(--sl-color-accent) !important;
+    transition: 0.1s;
+}
+
+
 :root[data-theme='light'] .sidebar-content {
     background-color: var(--sl-color-white);
+}
+
+:root[data-theme='light'] aside .starlight-aside [aria-label='Note'] {
+    background-color: var(hsl(224, 100%, 86%)) !important;
+}
+
+:root[data-theme='light'] .sl-markdown-content a,
+:root[data-theme='light'] .sl-markdown-content table p {
+    color: var(--sl-color-black);
+}
+
+:root[data-theme='light'] .sl-markdown-content a:hover {
+    color: var(--sl-color-blue);
 }
 
 /* Subtle, polished card updates */
