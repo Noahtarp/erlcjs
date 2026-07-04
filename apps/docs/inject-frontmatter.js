@@ -334,6 +334,7 @@ if (fs.existsSync(indexFile)) {
 
 const structuredSidebar = [];
 for (const [packageKey, packageEntry] of packagesMap.entries()) {
+  if(packageEntry.label.toLowerCase() === 'index') continue;
   structuredSidebar.push({
     label: packageEntry.label,
     items: buildPackageSidebar(packageEntry, packageKey)
