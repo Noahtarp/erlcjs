@@ -153,7 +153,7 @@ a:hover {
     background-color: var(--sl-color-accent-low);
 }
 
-:root[data-theme='light'] starlight__search .pagefind-ui__result {
+:root[data-theme='light'] #starlight__search .pagefind-ui__result {
     --sl-color-black: var(--sl-color-accent-low);
     --pagefind-ui-text: var(--sl-color-text);
 }
