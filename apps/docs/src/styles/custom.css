@@ -181,7 +181,6 @@ a:hover {
     background-color: var(--sl-nextjs-header-bg-color);
     color: var(--sl-color-black);
     border: 1px solid var(--sl-color-hairline);
-    opacity: 0.8;
 }
 
 :root[data-theme='light'] dialog div button {
