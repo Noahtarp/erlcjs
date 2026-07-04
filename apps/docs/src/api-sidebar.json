@@ -251,6 +251,15 @@
     ]
   },
   {
+    "label": "INDEX",
+    "items": [
+      {
+        "label": "Index Package",
+        "slug": "api/index"
+      }
+    ]
+  },
+  {
     "label": "PRESETS",
     "items": [
       {
