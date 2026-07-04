@@ -49,6 +49,7 @@ export default defineConfig({
                         label: 'API Reference',
                         link: '/api/',
                         icon: 'information',
+                        id: 'reference',
                         items: [
                             { label: 'Overview', slug: 'api' },
                             ...apiSidebarItems
