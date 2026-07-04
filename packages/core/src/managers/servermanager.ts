@@ -41,4 +41,12 @@ export class ServerManager {
 
         return rawServerData;
     }
+
+    public get isFull() {
+        return this.cache?.currentPlayers === this.cache?.maxPlayers;
+    }
+
+    public get hasQueue() {
+        return this.cache?.queue.length && this.cache.queue.length > 0;
+    }
 }
