@@ -135,7 +135,8 @@ a:hover {
 }
 
 
-:root[data-theme='light'] .sidebar-content {
+:root[data-theme='light'] .sidebar-content, 
+:root[data-theme='light'] .sidebar-pane {
     background-color: var(--sl-color-white);
 }
 
@@ -156,6 +157,35 @@ a:hover {
 :root[data-theme='light'] #starlight__search .pagefind-ui__result {
     --sl-color-black: var(--sl-color-accent-low);
     --pagefind-ui-text: var(--sl-color-text);
+}
+
+#starlight__search .pagefind-ui__search-input,
+#starlight__search .pagefind-ui__result {
+    opacity: 0.6;
+    backdrop-filter: blur(1rem);
+}
+
+:root[data-theme='dark'] dialog {
+    backdrop-filter: blur(1rem);
+    background-color: var(--sl-nextjs-header-bg-color);
+    color: var(--sl-color-white);
+    border: 1px solid var(--sl-color-hairline);
+}
+
+:root[data-theme='light'] dialog {
+    backdrop-filter: blur(1rem);
+    background-color: var(--sl-nextjs-header-bg-color);
+    color: var(--sl-color-black);
+    border: 1px solid var(--sl-color-hairline);
+    opacity: 0.8;
+}
+
+:root[data-theme='light'] dialog div button {
+    background: none;
+}
+
+:root[data-theme='light'] site-search button {
+    background: none;
 }
 
 /* Subtle, polished card updates */
