@@ -19,6 +19,7 @@ export interface MapOptions {
     players?: PlayerManager | Player[];
     emergencyCalls?: EmergencyCallManager | EmergencyCall[];
     map: MapType | string | Buffer | ArrayBuffer;
+    showModCalls: boolean;
 }
 
 function createPlayerPinSVG(size: number, color: string): string {
@@ -26,6 +27,14 @@ function createPlayerPinSVG(size: number, color: string): string {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${pinSize}" height="${pinSize}" viewBox="0 0 24 24">
   <path fill="${color}" d="M18.364 17.364L12 23.728l-6.364-6.364a9 9 0 1 1 12.728 0" />
 </svg>`;
+}
+
+function createModCallSVG(size: number, color: string): string {
+    const modCallSize = Math.round(size * 0.6);
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${modCallSize}" height="${modCallSize}" viewBox="0 0 56 56">
+  <path d="M0 0h56v56H0z" fill="none" />
+  <path fill="${color}" d="M28 51.906c13.055 0 23.906-10.828 23.906-23.906c0-13.055-10.875-23.906-23.93-23.906C14.899 4.094 4.095 14.945 4.095 28c0 13.078 10.828 23.906 23.906 23.906m-.023-20.39c-1.243 0-1.922-.727-1.97-1.97L25.68 17.97c-.047-1.29.937-2.203 2.273-2.203c1.313 0 2.32.937 2.274 2.226l-.329 11.555c-.047 1.265-.75 1.969-1.921 1.969m0 8.625c-1.36 0-2.626-1.078-2.626-2.532s1.243-2.53 2.626-2.53c1.359 0 2.624 1.054 2.624 2.53c0 1.477-1.289 2.532-2.624 2.532" />
+</svg>`
 }
 
 function createEmergencyCallSVG(size: number, color: string): string {
@@ -43,8 +52,9 @@ function createEmergencyCallSVG(size: number, color: string): string {
 }
 
 export async function drawMap(options: MapOptions) {
-    const { players: playersInput, emergencyCalls: emergencyCallsInput, map, size: sizeOption } = options;
+    const { players: playersInput, emergencyCalls: emergencyCallsInput, map, size: sizeOption, showModCalls: showModCallsInput } = options;
     const size = sizeOption ?? 60;
+    const showModCalls = showModCallsInput ?? true;
 
     let playersArr: Player[] | undefined;
     if (playersInput) {
@@ -86,6 +96,18 @@ export async function drawMap(options: MapOptions) {
                 left: Math.round(player.location.x - size / 2),
                 top: Math.round(player.location.z - size / 2 - pinSize / 2),
             });
+            if (showModCalls) {
+                const filtered = player.client.modCalls.cache.filter(v => v.callerId === player.id && (v.moderatorId === null || v.moderatorId === undefined))
+                if (filtered.size > 0) {
+                    const modCallSVG = createModCallSVG(size, '#ffca2a');
+                    const modCallSize = Math.round(size * 0.6);
+                    composites.push({
+                        input: Buffer.from(modCallSVG),
+                        left: Math.round(player.location.x + modCallSize / 4),
+                        top: Math.round(player.location.z - size / 2 - pinSize / 2 - modCallSize / 4),
+                    })
+                }
+            }
         }
     }
 
