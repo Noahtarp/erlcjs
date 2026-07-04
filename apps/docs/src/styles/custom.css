@@ -148,6 +148,16 @@ a:hover {
     color: var(--sl-color-blue);
 }
 
+:root[data-theme='light'] #starlight__search .pagefind-ui__search-input {
+    color: var(--sl-color-black);
+    background-color: var(--sl-color-accent-low);
+}
+
+:root[data-theme='light'] starlight__search .pagefind-ui__result {
+    --sl-color-black: var(--sl-color-accent-low);
+    --pagefind-ui-text: var(--sl-color-text);
+}
+
 /* Subtle, polished card updates */
 .card {
   border: 1px solid var(--sl-color-hairline) !important;
