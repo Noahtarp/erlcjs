@@ -141,7 +141,7 @@ export async function drawMap(options: MapOptions) {
             composites.push({
                 input: Buffer.from(pinSVG),
                 left: Math.round(player.location.x - pinSize / 2),
-                top: Math.round(player.location.z - pinSize * 11 / 12),
+                top: Math.round(player.location.z - pinSize * 23 / 24),
             });
             const ringSize = Math.round(size + 6);
             const ringSVG = createHeadshotRingSVG(size, color);
