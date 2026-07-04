@@ -1,0 +1,42 @@
+{
+  "name": "@erlcjs/map",
+  "description": "map",
+  "version": "0.1.0",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "homepage": "https://erlcjs.xyz",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erlc-js/erlcjs.git",
+    "directory": "packages/map"
+  },
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "lint": "eslint src/**/*.ts",
+    "extract": "api-extractor run --local",
+    "test": "pnpm tsx --env-file-if-exists=../../.env src/index.test.ts",
+    "bench": "pnpm tsx src/index.bench.ts"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@erlcjs/core": "1.3.1",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1"
+  }
+}
