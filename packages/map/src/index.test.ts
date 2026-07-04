@@ -17,13 +17,13 @@ const client = new Client({
 });
 
 client.on(ERLCEvents.playerJoin, async () => {
-    const map = await drawMap(client.players, MapType.fall);
+    const map = await drawMap({ players: client.players, emergencyCalls: client.emergencyCalls, map: MapType.fall });
     if (!map) return;
     await sharp(map).png().toFile('map.png');
 })
 
 client.on(ERLCEvents.playerUpdate, async () => {
-    const map = await drawMap(client.players, MapType.fall);
+    const map = await drawMap({ players: client.players, emergencyCalls: client.emergencyCalls, map: MapType.fall });
     if (!map) return;
     await sharp(map).png().toFile('map.png');
 })
