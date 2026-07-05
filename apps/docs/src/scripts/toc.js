@@ -35,12 +35,12 @@ function updateMobileProgress() {
   if (!progressContainer) {
     progressContainer = document.createElement('div');
     progressContainer.setAttribute('class', 'mobile-toc-progress-container');
-    progressContainer.innerHTML = '<div class="mobile-toc-progress-bar"></div><span class="mobile-toc-direction-arrow"></span>';
+    progressContainer.innerHTML = '<div class="mobile-toc-progress-bar"></div><span class="mobile-toc-direction-circle"></span>';
     mobileSummary.appendChild(progressContainer);
   }
 
   const bar = progressContainer.querySelector('.mobile-toc-progress-bar');
-  const arrow = progressContainer.querySelector('.mobile-toc-direction-arrow');
+  const circle = progressContainer.querySelector('.mobile-toc-direction-circle');
 
   const h = document.documentElement;
   const b = document.body;
@@ -49,8 +49,7 @@ function updateMobileProgress() {
   const percent = (h[st] || b[st]) / ((h[sh] || b[sh]) - h.clientHeight) * 100;
 
   bar.style.width = percent + '%';
-  arrow.style.left = percent + '%';
-  arrow.setAttribute('data-dir', currentDir);
+  circle.style.left = percent + '%';
 }
 
 function updateLineCoords() {
@@ -58,6 +57,7 @@ function updateLineCoords() {
   const rootUl = document.querySelector('starlight-toc > nav > ul');
   if (!container || !rootUl) return;
 
+  const allLinks = Array.from(container.querySelectorAll('ul li a'));
   const visibleLinks = Array.from(container.querySelectorAll('ul li a.is-visible'));
   const currentLink = container.querySelector('ul li a[aria-current="true"]');
   
@@ -68,11 +68,40 @@ function updateLineCoords() {
   
   targets.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
 
-  if (targets.length === 0) return;
+  if (targets.length === 0 || allLinks.length === 0) return;
 
   const containerRect = container.getBoundingClientRect();
   const baseLeftX = rootUl.getBoundingClientRect().left - containerRect.left;
   
+  let svg = container.querySelector('.toc-indicator-svg');
+  if (!svg) {
+    svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'toc-indicator-svg');
+    svg.innerHTML = `
+      <path class="toc-indicator-rail" />
+      <path class="toc-indicator-line" />
+      <circle class="toc-indicator-circle" r="2.5" />
+    `;
+    container.appendChild(svg);
+  }
+  const railEl = svg.querySelector('.toc-indicator-rail');
+  let railData = '';
+  
+  allLinks.forEach((link, idx) => {
+    const linkRect = link.getBoundingClientRect();
+    const depthOffset = link.parentElement.closest('ul ul') ? 12 : 0;
+    const x = baseLeftX + depthOffset;
+    const yStart = linkRect.top - containerRect.top + 6;
+    const yEnd = linkRect.bottom - containerRect.top - 6;
+
+    if (idx === 0) {
+      railData += `M ${x} ${yStart} L ${x} ${yEnd}`;
+    } else {
+      railData += ` L ${x} ${yStart} L ${x} ${yEnd}`;
+    }
+  });
+  railEl.setAttribute('d', railData);
+
   let points = [];
   targets.forEach((link) => {
     const linkRect = link.getBoundingClientRect();
@@ -106,16 +135,9 @@ function renderLoop() {
   const container = document.querySelector('starlight-toc nav');
   if (!container) return;
 
-  let svg = container.querySelector('.toc-indicator-svg');
-  if (!svg) {
-    svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('class', 'toc-indicator-svg');
-    svg.innerHTML = '<path class="toc-indicator-line" /><path class="toc-indicator-arrow" />';
-    container.appendChild(svg);
-  }
-
+  const svg = container.querySelector('.toc-indicator-svg');
   const pathEl = svg.querySelector('.toc-indicator-line');
-  const arrowEl = svg.querySelector('.toc-indicator-arrow');
+  const circleEl = svg.querySelector('.toc-indicator-circle');
 
   const ease = 0.2;
   
@@ -151,13 +173,13 @@ function renderLoop() {
   });
   pathEl.setAttribute('d', pathData);
 
-  let arrowData = '';
   if (currentDir === 'down') {
-    arrowData = `M ${animState.endX - 4} ${animState.endY - 4} L ${animState.endX + 4} ${animState.endY - 4} L ${animState.endX} ${animState.endY + 2} Z`;
+    circleEl.setAttribute('cx', animState.endX);
+    circleEl.setAttribute('cy', animState.endY);
   } else {
-    arrowData = `M ${animState.startX - 4} ${animState.startY + 4} L ${animState.startX + 4} ${animState.startY + 4} L ${animState.startX} ${animState.startY - 2} Z`;
+    circleEl.setAttribute('cx', animState.startX);
+    circleEl.setAttribute('cy', animState.startY);
   }
-  arrowEl.setAttribute('d', arrowData);
 
   let dist = Math.abs(targetState.startY - animState.startY) + Math.abs(targetState.endY - animState.endY);
   if (dist < 0.1) {
