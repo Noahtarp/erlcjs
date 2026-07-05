@@ -26,6 +26,15 @@ export default defineConfig({
                 { icon: 'github', label: 'GitHub', href: 'https://github.com/erlc-js/erlcjs' },
                 { icon: 'discord', label: 'Discord', href: 'https://discord.gg/yMK7Szrn8Q' },
             ],
+            head: [
+                {
+                    tag: 'script',
+                    attrs: {
+                        src: '/scripts/toc.js',
+                        defer: true
+                    }
+                },
+            ],
             plugins: [
                 starlightThemeNext(),
                 // starlightLinksValidatorPlugin(),
