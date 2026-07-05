@@ -62,7 +62,7 @@ export class WebhookServer {
                         }
 
                         const payload = JSON.parse(rawBody.toString('utf-8'));
-                        await this.handleGatewayEvent(payload);
+                        this.handleGatewayEvent(payload).catch((err) => this.client.emit('error', err));
 
                         res.writeHead(200, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify({ received: true }));
