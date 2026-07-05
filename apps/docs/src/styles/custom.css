@@ -68,7 +68,7 @@ a:hover {
   code, 
   [aria-selected='true'], 
   site-search button, 
-  mobile-starlight-toc summary span, 
+  mobile-starlight-toc summary span:not(.display-current), 
   .card,
   .sl-steps li::before
 ) {
