@@ -289,14 +289,14 @@ mobile-starlight-toc summary {
 }
 
 :root[data-theme='dark'] dialog {
-    backdrop-filter: blur(1rem);
+    backdrop-filter: blur(0.75rem);
     background-color: var(--sl-nextjs-header-bg-color);
     color: var(--sl-color-white);
     border: 1px solid var(--sl-color-hairline);
 }
 
 :root[data-theme='light'] dialog {
-    backdrop-filter: blur(1rem);
+    backdrop-filter: blur(0.75rem);
     background-color: var(--sl-nextjs-header-bg-color);
     color: var(--sl-color-black);
     border: 1px solid var(--sl-color-hairline);
@@ -325,11 +325,11 @@ body[data-mobile-menu-expanded] .sidebar-content {
 
 body[data-mobile-menu-expanded] .sidebar-pane {
     background-color: var(--sl-nextjs-header-bg-color) !important;
-    backdrop-filter: blur(1rem);
+    backdrop-filter: blur(0.75rem);
 }
 
 #starlight__mobile-toc .dropdown {
-    background-color: var(--sl-nextjs-header-bg-color);
+    background-color: var(--sl-nextjs-header-bg-color), 0.4;
 }
 
 .card {
