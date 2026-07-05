@@ -6,6 +6,7 @@ import path from 'node:path';
 import starlightSidebarTopicsPlugin from 'starlight-sidebar-topics';
 import starlightLinksValidatorPlugin from 'starlight-links-validator';
 import starlightThemeNext from 'starlight-theme-next';
+import { readFileSync } from 'node:fs';
 
 const sidebarFilePath = path.resolve('./src/api-sidebar.json');
 const apiSidebarItems = fs.existsSync(sidebarFilePath)
@@ -28,12 +29,9 @@ export default defineConfig({
             ],
             head: [
                 {
-                    tag: 'script',
-                    attrs: {
-                        src: '/scripts/toc.js',
-                        defer: true
-                    }
-                },
+                tag: 'script',
+                content: readFileSync(new URL('./src/scripts/toc.js', import.meta.url), 'utf-8')
+                }
             ],
             plugins: [
                 starlightThemeNext(),
