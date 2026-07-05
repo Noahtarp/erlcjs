@@ -328,6 +328,10 @@ body[data-mobile-menu-expanded] .sidebar-pane {
     backdrop-filter: blur(1rem);
 }
 
+#starlight__mobile-toc .dropdown {
+    background-color: var(--sl-nextjs-header-bg-color);
+}
+
 .card {
   border: 1px solid var(--sl-color-hairline) !important;
   border-radius: 12px !important;
