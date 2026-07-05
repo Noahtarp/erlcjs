@@ -311,7 +311,23 @@ mobile-starlight-toc summary {
     background: none;
 }
 
-/* Subtle, polished card updates */
+:root[data-theme='light'] button[aria-label='Search'] {
+    background: none;
+}
+
+button[aria-label='Menu'] {
+    transition: all 0.1s ease-in;
+}
+
+body[data-mobile-menu-expanded] .sidebar-content {
+    background: none !important;
+}
+
+body[data-mobile-menu-expanded] .sidebar-pane {
+    background-color: var(--sl-nextjs-header-bg-color) !important;
+    backdrop-filter: blur(1rem);
+}
+
 .card {
   border: 1px solid var(--sl-color-hairline) !important;
   border-radius: 12px !important;
