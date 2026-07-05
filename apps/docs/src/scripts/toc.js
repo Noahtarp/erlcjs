@@ -1,8 +1,8 @@
 let lastScrollTop = 0;
 let currentDir = 'down';
 
-let animState = { startX: 0, startY: 0, endX: 0, endY: 0, pathPoints: [] };
-let targetState = null;
+let animProgress = { startLength: 0, endLength: 0 };
+let currentPathLength = 0;
 let isAnimating = false;
 
 window.addEventListener('scroll', () => {
@@ -52,6 +52,25 @@ function updateMobileProgress() {
   circle.style.left = percent + '%';
 }
 
+function generateCurvedPath(points) {
+  if (points.length === 0) return '';
+  let d = `M ${points[0].x} ${points[0].yStart} L ${points[0].x} ${points[0].yEnd}`;
+  
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    
+    if (prev.x !== curr.x) {
+      const midY = prev.yEnd + (curr.yStart - prev.yEnd) * 0.5;
+      d += ` C ${prev.x} ${midY}, ${curr.x} ${midY}, ${curr.x} ${curr.yStart}`;
+    } else {
+      d += ` L ${curr.x} ${curr.yStart}`;
+    }
+    d += ` L ${curr.x} ${curr.yEnd}`;
+  }
+  return d;
+}
+
 function updateLineCoords() {
   const container = document.querySelector('starlight-toc nav');
   const rootUl = document.querySelector('starlight-toc > nav > ul');
@@ -84,56 +103,70 @@ function updateLineCoords() {
     `;
     container.appendChild(svg);
   }
-  const railEl = svg.querySelector('.toc-indicator-rail');
-  let railData = '';
   
-  allLinks.forEach((link, idx) => {
+  const railEl = svg.querySelector('.toc-indicator-rail');
+  let railPoints = [];
+  allLinks.forEach((link) => {
     const linkRect = link.getBoundingClientRect();
     const depthOffset = link.parentElement.closest('ul ul') ? 12 : 0;
     const x = baseLeftX + depthOffset;
     const yStart = linkRect.top - containerRect.top + 6;
     const yEnd = linkRect.bottom - containerRect.top - 6;
-
-    if (idx === 0) {
-      railData += `M ${x} ${yStart} L ${x} ${yEnd}`;
-    } else {
-      railData += ` L ${x} ${yStart} L ${x} ${yEnd}`;
-    }
+    railPoints.push({ x, yStart, yEnd });
   });
-  railEl.setAttribute('d', railData);
+  railEl.setAttribute('d', generateCurvedPath(railPoints));
 
-  let points = [];
+  const pathEl = svg.querySelector('.toc-indicator-line');
+  pathEl.setAttribute('d', generateCurvedPath(railPoints));
+  currentPathLength = pathEl.getTotalLength();
+
+  let targetPoints = [];
   targets.forEach((link) => {
     const linkRect = link.getBoundingClientRect();
     const depthOffset = link.parentElement.closest('ul ul') ? 12 : 0;
     const x = baseLeftX + depthOffset;
     const yStart = linkRect.top - containerRect.top + 6;
     const yEnd = linkRect.bottom - containerRect.top - 6;
-    points.push({ x, yStart, yEnd });
+    targetPoints.push({ x, yStart, yEnd });
   });
 
-  targetState = {
-    startX: points[0].x,
-    startY: points[0].yStart,
-    endX: points[points.length - 1].x,
-    endY: points[points.length - 1].yEnd,
-    pathPoints: points
-  };
+  let startOffsetPixel = 0;
+  let endOffsetPixel = currentPathLength;
+
+  const steps = 100;
+  let foundStart = false;
+  for (let i = 0; i <= steps; i++) {
+    const len = (i / steps) * currentPathLength;
+    const pt = pathEl.getPointAtLength(len);
+    
+    if (!foundStart && pt.y >= targetPoints[0].yStart - 1) {
+      startOffsetPixel = len;
+      foundStart = true;
+    }
+    if (pt.y <= targetPoints[targetPoints.length - 1].yEnd + 1) {
+      endOffsetPixel = len;
+    }
+  }
+
+  animProgress.targetStart = startOffsetPixel;
+  animProgress.targetEnd = endOffsetPixel;
 
   if (!isAnimating) {
+    if (animProgress.startLength === 0 && animProgress.endLength === 0) {
+      animProgress.startLength = startOffsetPixel;
+      animProgress.endLength = endOffsetPixel;
+    }
     isAnimating = true;
     renderLoop();
   }
 }
 
 function renderLoop() {
-  if (!targetState) {
+  const container = document.querySelector('starlight-toc nav');
+  if (!container) {
     isAnimating = false;
     return;
   }
-
-  const container = document.querySelector('starlight-toc nav');
-  if (!container) return;
 
   const svg = container.querySelector('.toc-indicator-svg');
   const pathEl = svg.querySelector('.toc-indicator-line');
@@ -141,49 +174,28 @@ function renderLoop() {
 
   const ease = 0.2;
   
-  if (animState.pathPoints.length === 0) {
-    animState = { ...targetState };
-  } else {
-    animState.startX += (targetState.startX - animState.startX) * ease;
-    animState.startY += (targetState.startY - animState.startY) * ease;
-    animState.endX += (targetState.endX - animState.endX) * ease;
-    animState.endY += (targetState.endY - animState.endY) * ease;
+  animProgress.startLength += (animProgress.targetStart - animProgress.startLength) * ease;
+  animProgress.endLength += (animProgress.targetEnd - animProgress.endLength) * ease;
 
-    const maxLen = Math.max(animState.pathPoints.length, targetState.pathPoints.length);
-    let nextPoints = [];
-    for (let i = 0; i < maxLen; i++) {
-      let curr = animState.pathPoints[i] || animState.pathPoints[animState.pathPoints.length - 1];
-      let targ = targetState.pathPoints[i] || targetState.pathPoints[targetState.pathPoints.length - 1];
-      nextPoints.push({
-        x: curr.x + (targ.x - curr.x) * ease,
-        yStart: curr.yStart + (targ.yStart - curr.yStart) * ease,
-        yEnd: curr.yEnd + (targ.yEnd - curr.yEnd) * ease
-      });
-    }
-    animState.pathPoints = nextPoints;
-  }
+  const s = Math.max(0, animProgress.startLength);
+  const e = Math.min(currentPathLength, animProgress.endLength);
 
-  let pathData = '';
-  animState.pathPoints.forEach((pt, idx) => {
-    if (idx === 0) {
-      pathData += `M ${pt.x} ${pt.yStart} L ${pt.x} ${pt.yEnd}`;
-    } else {
-      pathData += ` L ${pt.x} ${pt.yStart} L ${pt.x} ${pt.yEnd}`;
-    }
-  });
-  pathEl.setAttribute('d', pathData);
+  pathEl.style.strokeDasharray = `${e - s} ${currentPathLength}`;
+  pathEl.style.strokeDashoffset = `-${s}`;
 
-  if (currentDir === 'down') {
-    circleEl.setAttribute('cx', animState.endX);
-    circleEl.setAttribute('cy', animState.endY);
-  } else {
-    circleEl.setAttribute('cx', animState.startX);
-    circleEl.setAttribute('cy', animState.startY);
-  }
+  try {
+    const activeLengthLocation = currentDir === 'down' ? e : s;
+    const pt = pathEl.getPointAtLength(activeLengthLocation);
+    circleEl.setAttribute('cx', pt.x);
+    circleEl.setAttribute('cy', pt.y);
+  } catch (err) {}
 
-  let dist = Math.abs(targetState.startY - animState.startY) + Math.abs(targetState.endY - animState.endY);
+  const dist = Math.abs(animProgress.targetStart - animProgress.startLength) + 
+               Math.abs(animProgress.targetEnd - animProgress.endLength);
+
   if (dist < 0.1) {
-    animState = { ...targetState };
+    animProgress.startLength = animProgress.targetStart;
+    animProgress.endLength = animProgress.targetEnd;
     isAnimating = false;
   } else {
     requestAnimationFrame(renderLoop);
